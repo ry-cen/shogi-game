@@ -22,10 +22,13 @@ class ShogiPiece {
         }
     }
 
+    // Sets the square that this piece resides on.
     setSquare(newSquare) {
         this.square = newSquare;
     }
 
+
+    // TODO Promotes this piece if it is promotable.
     promote() {
         if (this.promotable) {
             this.name = promoteMap[this.name]
@@ -33,11 +36,13 @@ class ShogiPiece {
         }
     }
 
+    // TODO Sends this piece to the hand that is given
     toHand(hand) {
         this.color = hand.color
         this.square = hand
     }
 
+    // Returns a clone of this piece with the same name, originalColor, color and id.
     clone() {
         return new ShogiPiece(this.name, this.originalColor, this.color, this.id)
     }
