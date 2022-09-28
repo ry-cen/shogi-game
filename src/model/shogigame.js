@@ -2,6 +2,13 @@ import { Shogi, Color } from 'shogi.js';
 import ShogiPiece from './shogipiece.js'
 import Square from './square.js';
 
+/*
+    TODO Unify coordinate systems
+    Coordinate Systems:
+    Library Game - 1-indexed (1-9) - File-Rank
+    Board - 0-indexed (0-8) - Rank-File
+*/
+
 class ShogiGame {
     constructor(thisPlayerIsBlack) {
         this.thisPlayerIsBlack = thisPlayerIsBlack
@@ -13,20 +20,22 @@ class ShogiGame {
         this.enemyColor = thisPlayerIsBlack ? "white" : "black";
     }
 
+    // Checks if the current board state would be a checkmate
     isCheckmate(isMyMove) {
         // all king moves are being attacked
-        // attackers cant be attacked
+        // attackers attacking the king cant be attacked
         // all drops wont remove check
 
         const convert = {
             0:9, 1:8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8:1
         }
 
+        // Finds the king then finds all the moves that the king could make.
         let coords = isMyMove ? this.findPiece(this.board, this.enemyKingId) : this.findPiece(this.board, this.kingId);
         let checkmateAttacker = [];
         let kingMoves = this.game.getMovesFrom(convert[coords[0]], coords[1] + 1);
 
-        console.log(kingMoves)
+        // Figures out if the king has any valid moves away
         for (let i = 0; i < 9; i++) {
             for (let j = 0; j < 9; j++) {
                 const piece = this.board[i][j].getPiece();
@@ -50,7 +59,7 @@ class ShogiGame {
         console.log(kingMoves.every((move) => move === true))
 
 
-
+        // Finds the locations of any pieces that are currently attacking the king.
         for (let i = 0; i < 9; i++) {
             for (let j = 0; j < 9; j++) {
                 const piece = this.board[i][j].getPiece();
@@ -69,15 +78,18 @@ class ShogiGame {
         
         
         const canKingMove = kingMoves.length != 0
+        
+        // Find any locations where a drop can block the attackers and remove check.
     }
 
-
+    // Figures out if the current player is in check.
     isInCheck(board, isMyMove) {
 
         const convert = {
             0:9, 1:8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8:1
         }
 
+        // Finds if there are any pieces that are attacking the king.
         let coords = isMyMove ? this.findPiece(board, this.kingId) : this.findPiece(board, this.enemyKingId);
         for (let i = 0; i < 9; i++) {
             for (let j = 0; j < 9; j++) {
@@ -97,6 +109,7 @@ class ShogiGame {
         return false
     }
 
+    // Creates the board with the correct pieces and squares and returns it.
     makeBoard() {
         const side = this.thisPlayerIsBlack ? {
             0:'0', 1:'1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8:'8'
@@ -151,10 +164,12 @@ class ShogiGame {
         return board
     }
 
+    // Returns the board contained in this game object.
     getBoard() {
         return this.board;
     }
 
+    // Sets the board contained in this game object to the given board.
     setBoard(board) {
         this.board = board;
     }
@@ -164,16 +179,19 @@ class ShogiGame {
     // to : [x, y]
     movePiece(pieceId, to, isMyMove) {
 
+        // Side conversions
         const side = isMyMove ? {
             0:0, 1:1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8:8
         } : {
             0:8, 1:7, 2: 6, 3: 5, 4: 4, 5: 3, 6: 2, 7: 1, 8:0
         }
 
+        // Conversions to 1-indexed coordinate system for shogi library
         const convert = {
             0:9, 1:8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8:1
         }
 
+        // Clones the board 
         let currentBoard = this.getBoard()
         let tmpBoard = this.cloneBoard(currentBoard);
 
@@ -195,6 +213,7 @@ class ShogiGame {
         
         const ogPiece = currentBoard[y][x].getPiece();
         
+        // Attempts to check if the move is valid in the library
         try {
             
             this.game.move(convert[x], y+1, convert[to_x], to_y+1, false);
@@ -204,10 +223,9 @@ class ShogiGame {
             return "didn't move"
         }
 
+        // Makes a move on the temporary board to check if it would put the current player in check.
         tmpBoard[y][x].removePiece();
         tmpBoard[to_y][to_x].setPiece(ogPiece);
-
-        
 
         if (this.isInCheck(tmpBoard, isMyMove)) {
             if(isMyMove) {
@@ -226,12 +244,14 @@ class ShogiGame {
             this.enemyKingInCheck = false;
         }
 
+        // Makes the move on the current board if there are no issues.
         currentBoard[y][x].removePiece();
         currentBoard[to_y][to_x].setPiece(ogPiece);
 
         this.setBoard(currentBoard)
     }
 
+    // Finds a piece of the given piece id on the given board and returns the coordinates.
     findPiece(board, pieceId) {
         for (var i = 0; i < 9; i++) {
             for (var j = 0; j < 9; j++) {
@@ -242,6 +262,7 @@ class ShogiGame {
         }
     }
 
+    // Clones a given board and returns a deep copy.
     cloneBoard(board) {
         let newBoard = []
         for (let i = 0; i < 9; i++) {
