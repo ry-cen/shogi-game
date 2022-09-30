@@ -56,8 +56,10 @@ class Game extends React.Component {
 
         this.props.playAudio()
 
-        if (currentGame.isCheckmate(isMyMove)) {
-            console.log("Checkmate")
+        if (currentGame.isInCheck(currentGame.getBoard(), !isMyMove)) {
+            if (currentGame.isCheckmate(!isMyMove)) {
+                console.log("checkmate")
+            }
         }
 
         this.setState({

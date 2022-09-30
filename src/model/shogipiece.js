@@ -1,7 +1,7 @@
 import { promoteMap } from "./promotions";
 
 class ShogiPiece {
-    /* ids:
+    /* names:
         KY: Lance
         KE: Knight
         KA: Bishop
