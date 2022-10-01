@@ -32,8 +32,9 @@ code {
 }
 
 .piece {
-  background: #fff;
-  border: 1px solid #999;
+  background: #CC7722;
+  opacity: 0.5;
+  filter: hue-rotate(90deg);
   float: left;
   font-size: 24px;
   font-weight: bold;

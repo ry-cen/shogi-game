@@ -1,3 +1,5 @@
+import { Blur } from 'konva/lib/filters/Blur';
+import { RGBA } from 'konva/lib/filters/RGBA';
 import React from 'react';
 import { Image } from 'react-konva';
 import useImage from 'use-image';

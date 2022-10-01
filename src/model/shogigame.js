@@ -1,10 +1,8 @@
 import { Shogi, Color } from 'shogi.js';
-import Piece from '../ui/piece.js';
 import ShogiPiece from './shogipiece.js'
 import Square from './square.js';
 
 /*
-    TODO Unify coordinate systems
     Coordinate Systems:
     Library Game - 1-indexed (1-9) - File-Rank
     Board - 0-indexed (0-8) - Rank-File
@@ -13,6 +11,8 @@ import Square from './square.js';
 class ShogiGame {
     constructor(thisPlayerIsBlack) {
         this.thisPlayerIsBlack = thisPlayerIsBlack
+
+        // Side based conversions to sink board with game instance.
         this.side_x = this.thisPlayerIsBlack ? {
             0: 9, 1: 8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8: 1
         } : {
@@ -58,30 +58,26 @@ class ShogiGame {
             }
         }
 
-        let allPseudoLegalDrops = this.game.getDropsBy((isMyMove ? this.enemyColor : this.color));
+        let allPseudoLegalDrops = this.game.getDropsBy((isMyMove ? this.color : this.enemyColor));
 
         for (let i = 0; i < allPseudoLegalMoves.length; i++) {
             if (this.checkForCheck([allPseudoLegalMoves[i].from.x, allPseudoLegalMoves[i].from.y], [allPseudoLegalMoves[i].to.x, allPseudoLegalMoves[i].to.y], isMyMove)) {
                 continue
             } else {
-                console.log("not checkmate")
                 return false
             }
         }
 
         for (let i = 0; i < allPseudoLegalDrops.length; i++) {
-            if (this.checkForCheckDrop([allPseudoLegalMoves[i].to.x, allPseudoLegalMoves[i].to.y], isMyMove)) {
+            if (this.checkForCheckDrop([allPseudoLegalDrops[i].to.x, allPseudoLegalDrops[i].to.y], isMyMove, allPseudoLegalDrops[i].kind)) {
                 continue
             } else {
-                console.log("not checkmate")
                 return false
             }
         }
 
         return true
 
-        
-        // Find any locations where a drop can block the attackers and remove check.
     }
 
     // Figures out if the current player is in check.
@@ -97,7 +93,6 @@ class ShogiGame {
                 }
                 const moves = this.game.getMovesFrom(this.side_x[j], this.side_y[i]);
                 if (moves.some((move) => move.to.x === this.side_x[coords[0]] && move.to.y === this.side_y[coords[1]])) {
-                    console.log("oute")
                     return true;
                 }
 
@@ -117,7 +112,7 @@ class ShogiGame {
         for (let i = 0; i < 9; i++) {
             let row = []
             for (let j = 0; j < 9; j++) {
-                const canvasCoord = [((j+1) * 77 + 492), ((i+1) * 77 + 76)]
+                const canvasCoord = [((j+1) * 77 + 375), ((i+1) * 77 + 76)]
                 const square = new Square(this.side_x[j], this.side_y[i], canvasCoord, null);
                 row.push(square)
             }
@@ -214,7 +209,7 @@ class ShogiGame {
         return false
     }
 
-    checkForCheckDrop(to, isMyMove) {
+    checkForCheckDrop(to, isMyMove, kind) {
         const reverse_side_x = this.thisPlayerIsBlack ? {
             9: 0, 8: 1, 7: 2, 6: 3, 5: 4, 4: 5, 3: 6, 2: 7, 1: 8
         } : {
@@ -233,9 +228,9 @@ class ShogiGame {
         const to_y = reverse_side_y[to[1]];
         const to_x = reverse_side_x[to[0]];
 
-        tmpBoard[to_y][to_x].setPiece(new ShogiPiece("FU", null, isMyMove ? this.enemyColor : this.color, '00'));
+        tmpBoard[to_y][to_x].setPiece(new ShogiPiece(kind, null, isMyMove ? this.enemyColor : this.color, '00'));
 
-        this.game.drop(to[0], to[1], "HI")
+        this.game.drop(to[0], to[1], kind)
 
         if (this.isInCheck(tmpBoard, isMyMove)) {
             this.game.undrop(to[0], to[1])
@@ -307,11 +302,11 @@ class ShogiGame {
             if (!isMyMove) {
                 const r = (Math.floor(this.enemyHand.length / 6)) + 1;
                 const c = (this.enemyHand.length % 6) + 1;
-                this.enemyHand.push(new Square(0, 0, [-(c*30) + 472, (r*60) + 86], pieceToHand))
+                this.enemyHand.push(new Square(0, 0, [-(c*30) + 350, (r*60) + 86], pieceToHand))
             } else {
                 const r = (Math.floor(this.hand.length / 6)) + 1;
                 const c = (this.hand.length % 6) + 1;
-                this.hand.push(new Square(0, 0, [(c*30) + 1282, -(r*60) + 829], pieceToHand))
+                this.hand.push(new Square(0, 0, [(c*30) + 1170, -(r*60) + 829], pieceToHand))
             }
         }
 
@@ -371,13 +366,13 @@ class ShogiGame {
         for (let i = 0; i < this.enemyHand.length; i++) {
             const r = (Math.floor(i / 6)) + 1;
             const c = (i % 6) + 1;
-            this.enemyHand[i].setCanvasCoord([-(c*30) + 472, (r*60) + 86])
+            this.enemyHand[i].setCanvasCoord([-(c*30) + 350, (r*60) + 86])
         }
 
         for (let i = 0; i < this.hand.length; i++) {
             const r = (Math.floor(i / 6)) + 1;
             const c = (i % 6) + 1;
-            this.hand[i].setCanvasCoord([(c*30) + 1282, -(r*60) + 829])
+            this.hand[i].setCanvasCoord([(c*30) + 1170, -(r*60) + 829])
         }
     }
 
