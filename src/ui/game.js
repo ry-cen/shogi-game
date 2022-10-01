@@ -4,6 +4,7 @@ import ShogiGame from "../model/shogigame.js"
 import BoardPic from "../assets/board.png"
 import imagemap from "./imagemap.js"
 import { Stage, Layer, Group } from "react-konva";
+import { Color } from "shogi.js";
 
 
 
@@ -61,13 +62,13 @@ class Game extends React.Component {
            
         })
 
-        this.props.playAudio()
-
         if (currentGame.isInCheck(currentGame.getBoard(), !isMyMove)) {
             if (currentGame.isCheckmate(!isMyMove)) {
                 console.log("checkmate")
             }
         }
+
+        this.props.playAudio()
 
         this.setState({
             playersTurnIsBlack: !this.state.playersTurnIsBlack
@@ -122,7 +123,7 @@ class Game extends React.Component {
                                                 x = {square.getCanvasCoord()[0]-77}
                                                 y = {square.getCanvasCoord()[1]-77}
                                                 imgurls = {imagemap[(square.getPiece().promoted ? 1 : 0)][square.getPiece().name]}
-                                                isBlack = {square.getPiece().color === "black"}
+                                                isBlack = {square.getPiece().color === Color.Black}
                                                 gameKey = {this.state.gameKey}
                                                 onDragStart = {this.startDragging}
                                                 onDragEnd = {this.endDragging}
@@ -144,7 +145,7 @@ class Game extends React.Component {
                                                 x = {square.getCanvasCoord()[0]-77}
                                                 y = {square.getCanvasCoord()[1]-77}
                                                 imgurls = {imagemap[(square.getPiece().promoted ? 1 : 0)][square.getPiece().name]}
-                                                isBlack = {square.getPiece().color === "black"}
+                                                isBlack = {square.getPiece().color === Color.Black}
                                                 gameKey = {this.state.gameKey}
                                                 onDragStart = {this.startDragging}
                                                 onDragEnd = {this.endDragging}
@@ -164,7 +165,7 @@ class Game extends React.Component {
                                                 x = {square.getCanvasCoord()[0]-77}
                                                 y = {square.getCanvasCoord()[1]-77}
                                                 imgurls = {imagemap[(square.getPiece().promoted ? 1 : 0)][square.getPiece().name]}
-                                                isBlack = {square.getPiece().color === "black"}
+                                                isBlack = {square.getPiece().color === Color.Black}
                                                 gameKey = {this.state.gameKey}
                                                 onDragStart = {this.startDragging}
                                                 onDragEnd = {this.endDragging}

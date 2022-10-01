@@ -1,4 +1,5 @@
 import { Shogi, Color } from 'shogi.js';
+import Piece from '../ui/piece.js';
 import ShogiPiece from './shogipiece.js'
 import Square from './square.js';
 
@@ -29,8 +30,8 @@ class ShogiGame {
 
         this.board = this.makeBoard();
 
-        this.color = thisPlayerIsBlack ? "black" : "white";
-        this.enemyColor = thisPlayerIsBlack ? "white" : "black";
+        this.color = thisPlayerIsBlack ? Color.Black : Color.White;
+        this.enemyColor = thisPlayerIsBlack ? Color.White : Color.Black;
 
         this.hand = []
         this.enemyHand = []
@@ -44,7 +45,7 @@ class ShogiGame {
         // attackers attacking the king cant be attacked
         // all drops wont remove check
 
-        var allPseudoLegalMoves = [];
+        let allPseudoLegalMoves = [];
 
         for (let i = 0; i < 9; i++) {
             for (let j = 0; j < 9; j++) {
@@ -57,8 +58,19 @@ class ShogiGame {
             }
         }
 
+        let allPseudoLegalDrops = this.game.getDropsBy((isMyMove ? this.enemyColor : this.color));
+
         for (let i = 0; i < allPseudoLegalMoves.length; i++) {
             if (this.checkForCheck([allPseudoLegalMoves[i].from.x, allPseudoLegalMoves[i].from.y], [allPseudoLegalMoves[i].to.x, allPseudoLegalMoves[i].to.y], isMyMove)) {
+                continue
+            } else {
+                console.log("not checkmate")
+                return false
+            }
+        }
+
+        for (let i = 0; i < allPseudoLegalDrops.length; i++) {
+            if (this.checkForCheckDrop([allPseudoLegalMoves[i].to.x, allPseudoLegalMoves[i].to.y], isMyMove)) {
                 continue
             } else {
                 console.log("not checkmate")
@@ -119,23 +131,23 @@ class ShogiGame {
         for (let j = 0; j < 9; j += 8) {
             for (let i = 0; i < 9; i++) {
                 if (j === 0) {
-                    board[j][i].setPiece(new ShogiPiece(backRank[i], this.thisPlayerIsBlack ? "white" : "black", this.thisPlayerIsBlack ? "white" : "black", String(this.side_x[i]) + String(this.side_y[j])))
+                    board[j][i].setPiece(new ShogiPiece(backRank[i], this.thisPlayerIsBlack ? Color.White : Color.Black, this.thisPlayerIsBlack ? Color.White : Color.Black, String(this.side_x[i]) + String(this.side_y[j])))
                     if (i === 4) {
                         this.enemyKingId = String(this.side_x[i]) + String(this.side_y[j])
                     }
                     if (i === 1 || i === 7) {
-                        board[j + 1][i].setPiece(new ShogiPiece(midRank[midConvert[i]], this.thisPlayerIsBlack ? "white" : "black", this.thisPlayerIsBlack ? "white" : "black", String(this.side_x[i]) + String(this.side_y[j+1])))
+                        board[j + 1][i].setPiece(new ShogiPiece(midRank[midConvert[i]], this.thisPlayerIsBlack ? Color.White : Color.Black, this.thisPlayerIsBlack ? Color.White : Color.Black, String(this.side_x[i]) + String(this.side_y[j+1])))
                     }
-                    board[j+2][i].setPiece(new ShogiPiece("FU", this.thisPlayerIsBlack ? "white" : "black", this.thisPlayerIsBlack ? "white" : "black", String(this.side_x[i]) + String(this.side_y[j + 2])))
+                    board[j+2][i].setPiece(new ShogiPiece("FU", this.thisPlayerIsBlack ? Color.White : Color.Black, this.thisPlayerIsBlack ? Color.White : Color.Black, String(this.side_x[i]) + String(this.side_y[j + 2])))
                 } else {
-                    board[j][i].setPiece(new ShogiPiece(backRank[i], this.thisPlayerIsBlack ? "black" : "white", this.thisPlayerIsBlack ? "black" : "white", String(this.side_x[i]) + String(this.side_y[j])))
+                    board[j][i].setPiece(new ShogiPiece(backRank[i], this.thisPlayerIsBlack ? Color.Black : Color.White, this.thisPlayerIsBlack ? Color.Black : Color.White, String(this.side_x[i]) + String(this.side_y[j])))
                     if (i === 4) {
                         this.kingId = String(this.side_x[i]) + String(this.side_y[j])
                     }
                     if (i === 1 || i === 7) {
-                        board[j - 1][i].setPiece(new ShogiPiece(midRank[i], this.thisPlayerIsBlack ? "black" : "white", this.thisPlayerIsBlack ? "black" : "white", String(this.side_x[i]) + String(this.side_y[j - 1])))
+                        board[j - 1][i].setPiece(new ShogiPiece(midRank[i], this.thisPlayerIsBlack ? Color.Black : Color.White, this.thisPlayerIsBlack ? Color.Black : Color.White, String(this.side_x[i]) + String(this.side_y[j - 1])))
                     }
-                    board[j - 2][i].setPiece(new ShogiPiece("FU", this.thisPlayerIsBlack ? "black" : "white", this.thisPlayerIsBlack ? "black" : "white", String(this.side_x[i]) + String(this.side_y[j - 2])))
+                    board[j - 2][i].setPiece(new ShogiPiece("FU", this.thisPlayerIsBlack ? Color.Black : Color.White, this.thisPlayerIsBlack ? Color.Black : Color.White, String(this.side_x[i]) + String(this.side_y[j - 2])))
                 }
             }
         }
@@ -184,14 +196,53 @@ class ShogiGame {
         const to_x = reverse_side_x[to[0]];
         
         const ogPiece = currentBoard[y][x].getPiece();
+        const capPiece = currentBoard[to_y][to_x].getPiece() != null ? currentBoard[to_y][to_x].getPiece().name : false
 
         tmpBoard[y][x].removePiece();
         tmpBoard[to_y][to_x].setPiece(ogPiece);
 
+
+        this.game.move(this.side_x[x], this.side_y[y], this.side_x[to_x], this.side_y[to_y], false);
+
+
         if (this.isInCheck(tmpBoard, isMyMove)) {
+            this.game.unmove(this.side_x[x], this.side_y[y], this.side_x[to_x], this.side_y[to_y], false, capPiece);
             return true;
         }
 
+        this.game.unmove(this.side_x[x], this.side_y[y], this.side_x[to_x], this.side_y[to_y], false, capPiece);
+        return false
+    }
+
+    checkForCheckDrop(to, isMyMove) {
+        const reverse_side_x = this.thisPlayerIsBlack ? {
+            9: 0, 8: 1, 7: 2, 6: 3, 5: 4, 4: 5, 3: 6, 2: 7, 1: 8
+        } : {
+            1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8
+        }
+
+        const reverse_side_y = this.thisPlayerIsBlack ? {
+            1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8
+        } : {
+            9: 0, 8: 1, 7: 2, 6: 3, 5: 4, 4: 5, 3: 6, 2: 7, 1: 8
+        }
+
+        let currentBoard = this.getBoard();
+        let tmpBoard = this.cloneBoard(currentBoard);
+
+        const to_y = reverse_side_y[to[1]];
+        const to_x = reverse_side_x[to[0]];
+
+        tmpBoard[to_y][to_x].setPiece(new ShogiPiece("FU", null, isMyMove ? this.enemyColor : this.color, '00'));
+
+        this.game.drop(to[0], to[1], "HI")
+
+        if (this.isInCheck(tmpBoard, isMyMove)) {
+            this.game.undrop(to[0], to[1])
+            return true;
+        }
+
+        this.game.undrop(to[0], to[1])
         return false
     }
 

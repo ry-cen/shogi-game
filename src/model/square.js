@@ -1,3 +1,5 @@
+import { Color } from "shogi.js";
+
 class Square {
     constructor(x, y, canvasCoord, piece) {
         this.x = x;
@@ -21,7 +23,7 @@ class Square {
             var tempPiece = this.piece;
             this.piece = newPiece;
             this.piece.setSquare(this);
-            tempPiece.color = tempPiece.color === "black" ? "white" : "black";
+            tempPiece.color = tempPiece.color === Color.Black ? Color.White : Color.Black;
             return tempPiece;
         }
     }
@@ -49,7 +51,7 @@ class Square {
     setCanvasCoord(newCoords) {
         this.canvasCoord = newCoords;
     }
-    
+
     // Returns the canvas coordinates of this square.
     getCanvasCoord() {
         return this.canvasCoord;
