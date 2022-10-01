@@ -18,9 +18,11 @@ class Square {
             this.piece.setSquare(this);
             return false;
         } else {
+            var tempPiece = this.piece;
             this.piece = newPiece;
             this.piece.setSquare(this);
-            return true;
+            tempPiece.color = tempPiece.color === "black" ? "white" : "black";
+            return tempPiece;
         }
     }
 
@@ -44,6 +46,10 @@ class Square {
         return this.piece.id
     }
 
+    setCanvasCoord(newCoords) {
+        this.canvasCoord = newCoords;
+    }
+    
     // Returns the canvas coordinates of this square.
     getCanvasCoord() {
         return this.canvasCoord;

@@ -38,7 +38,14 @@ class Game extends React.Component {
     }
 
     movePiece = (selectedId, position, currentGame, isMyMove) => {
+
         const update = currentGame.movePiece(selectedId, position, isMyMove)
+
+        if (update === "needs update") {
+            this.setState({
+                gameKey: this.state.gameKey === 1 ? 0 : 1
+            })
+        }
 
         if (update === "didn't move") {
             this.setState({
@@ -86,6 +93,10 @@ class Game extends React.Component {
             }
         }
 
+        if (shortestDistance > 50) {
+            return false
+        }
+
         return hashmap[shortestDistance]
     }
 
@@ -96,10 +107,10 @@ class Game extends React.Component {
                 backgroundImage: `url(${BoardPic})`,
                 backgroundPosition: "Center",
                 backgroundRepeat: "no-repeat",
-                width: "1200px",
+                width: "1600px",
                 height: "768px",
             }}>
-                <Stage width={1200} height={768}>
+                <Stage width={1600} height={768}>
                     <Layer>
                     {this.state.gameState.getBoard().map((row) => {
                         return (<React.Fragment>
@@ -110,7 +121,7 @@ class Game extends React.Component {
                                                 name = {square.getPiece().name}
                                                 x = {square.getCanvasCoord()[0]-77}
                                                 y = {square.getCanvasCoord()[1]-77}
-                                                imgurls = {imagemap[square.getPiece().name]}
+                                                imgurls = {imagemap[(square.getPiece().promoted ? 1 : 0)][square.getPiece().name]}
                                                 isBlack = {square.getPiece().color === "black"}
                                                 gameKey = {this.state.gameKey}
                                                 onDragStart = {this.startDragging}
@@ -124,6 +135,46 @@ class Game extends React.Component {
                                     return
                                 })}
                             </React.Fragment>)
+                    })}
+                    {this.state.gameState.getHand().map((square) => {
+                                    if (square.isOccupied()) {                                    
+                                        return (
+                                            <Piece
+                                                name = {square.getPiece().name}
+                                                x = {square.getCanvasCoord()[0]-77}
+                                                y = {square.getCanvasCoord()[1]-77}
+                                                imgurls = {imagemap[(square.getPiece().promoted ? 1 : 0)][square.getPiece().name]}
+                                                isBlack = {square.getPiece().color === "black"}
+                                                gameKey = {this.state.gameKey}
+                                                onDragStart = {this.startDragging}
+                                                onDragEnd = {this.endDragging}
+                                                draggedPieceTargetId = {this.state.draggedPieceTargetId}
+                                                id = {square.getPieceId()}
+                                                thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
+                                                playersTurnIsBlack = {this.state.playersTurnIsBlack}
+                                            />)
+                                    }
+                                    return
+                    })}
+                    {this.state.gameState.getEnemyHand().map((square) => {
+                                    if (square.isOccupied()) {                                    
+                                        return (
+                                            <Piece
+                                                name = {square.getPiece().name}
+                                                x = {square.getCanvasCoord()[0]-77}
+                                                y = {square.getCanvasCoord()[1]-77}
+                                                imgurls = {imagemap[(square.getPiece().promoted ? 1 : 0)][square.getPiece().name]}
+                                                isBlack = {square.getPiece().color === "black"}
+                                                gameKey = {this.state.gameKey}
+                                                onDragStart = {this.startDragging}
+                                                onDragEnd = {this.endDragging}
+                                                draggedPieceTargetId = {this.state.draggedPieceTargetId}
+                                                id = {square.getPieceId()}
+                                                thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
+                                                playersTurnIsBlack = {this.state.playersTurnIsBlack}
+                                            />)
+                                    }
+                                    return
                     })}
                     </Layer>
                 </Stage>
