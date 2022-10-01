@@ -1,10 +1,22 @@
 export default {
-    'FU':['https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Shogi_fuhyo%28svg%29.svg/202px-Shogi_fuhyo%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Shogi_fuhyo%28svg%29.svg/202px-Shogi_fuhyo%28svg%29.svg.png'],
-    'KY':['https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Shogi_kyosha%28svg%29.svg/202px-Shogi_kyosha%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Shogi_kyosha%28svg%29.svg/202px-Shogi_kyosha%28svg%29.svg.png'],
-    'KE':['https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Shogi_keima.svg/202px-Shogi_keima.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Shogi_keima.svg/202px-Shogi_keima.svg.png'],
-    'OU':['https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Shogi_osho%28svg%29.svg/202px-Shogi_osho%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Shogi_gyokusho%28svg%29.svg/202px-Shogi_gyokusho%28svg%29.svg.png'],
-    'KA':['https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Shogi_kakugyo%28svg%29.svg/202px-Shogi_kakugyo%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Shogi_kakugyo%28svg%29.svg/202px-Shogi_kakugyo%28svg%29.svg.png'],
-    'HI':['https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Shogi_hisha%28svg%29.svg/202px-Shogi_hisha%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Shogi_hisha%28svg%29.svg/202px-Shogi_hisha%28svg%29.svg.png'],
-    'GI':['https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Shogi_ginsho%28svg%29.svg/202px-Shogi_ginsho%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Shogi_ginsho%28svg%29.svg/202px-Shogi_ginsho%28svg%29.svg.png'],
-    'KI':['https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Shogi_kinsho%28svg%29.svg/202px-Shogi_kinsho%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Shogi_kinsho%28svg%29.svg/202px-Shogi_kinsho%28svg%29.svg.png']
+    0:{
+        'FU':['https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Shogi_fuhyo%28svg%29.svg/202px-Shogi_fuhyo%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Shogi_fuhyo%28svg%29.svg/202px-Shogi_fuhyo%28svg%29.svg.png'],
+        'KY':['https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Shogi_kyosha%28svg%29.svg/202px-Shogi_kyosha%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Shogi_kyosha%28svg%29.svg/202px-Shogi_kyosha%28svg%29.svg.png'],
+        'KE':['https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Shogi_keima.svg/202px-Shogi_keima.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Shogi_keima.svg/202px-Shogi_keima.svg.png'],
+        'OU':['https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Shogi_gyokusho%28svg%29.svg/202px-Shogi_gyokusho%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Shogi_osho%28svg%29.svg/202px-Shogi_osho%28svg%29.svg.png'],
+        'KA':['https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Shogi_kakugyo%28svg%29.svg/202px-Shogi_kakugyo%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Shogi_kakugyo%28svg%29.svg/202px-Shogi_kakugyo%28svg%29.svg.png'],
+        'HI':['https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Shogi_hisha%28svg%29.svg/202px-Shogi_hisha%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Shogi_hisha%28svg%29.svg/202px-Shogi_hisha%28svg%29.svg.png'],
+        'GI':['https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Shogi_ginsho%28svg%29.svg/202px-Shogi_ginsho%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Shogi_ginsho%28svg%29.svg/202px-Shogi_ginsho%28svg%29.svg.png'],
+        'KI':['https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Shogi_kinsho%28svg%29.svg/202px-Shogi_kinsho%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Shogi_kinsho%28svg%29.svg/202px-Shogi_kinsho%28svg%29.svg.png']
+    },
+    1:{
+        'FU':['https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Shogi_fuhyo%28svg%29.svg/202px-Shogi_fuhyo%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Shogi_fuhyo%28svg%29.svg/202px-Shogi_fuhyo%28svg%29.svg.png'],
+        'KY':['https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Shogi_kyosha%28svg%29.svg/202px-Shogi_kyosha%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Shogi_kyosha%28svg%29.svg/202px-Shogi_kyosha%28svg%29.svg.png'],
+        'KE':['https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Shogi_keima.svg/202px-Shogi_keima.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Shogi_keima.svg/202px-Shogi_keima.svg.png'],
+        'OU':['https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Shogi_gyokusho%28svg%29.svg/202px-Shogi_gyokusho%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Shogi_osho%28svg%29.svg/202px-Shogi_osho%28svg%29.svg.png'],
+        'KA':['https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Shogi_kakugyo%28svg%29.svg/202px-Shogi_kakugyo%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Shogi_kakugyo%28svg%29.svg/202px-Shogi_kakugyo%28svg%29.svg.png'],
+        'HI':['https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Shogi_hisha%28svg%29.svg/202px-Shogi_hisha%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Shogi_hisha%28svg%29.svg/202px-Shogi_hisha%28svg%29.svg.png'],
+        'GI':['https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Shogi_ginsho%28svg%29.svg/202px-Shogi_ginsho%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Shogi_ginsho%28svg%29.svg/202px-Shogi_ginsho%28svg%29.svg.png'],
+        'KI':['https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Shogi_kinsho%28svg%29.svg/202px-Shogi_kinsho%28svg%29.svg.png','https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Shogi_kinsho%28svg%29.svg/202px-Shogi_kinsho%28svg%29.svg.png']
+    }
 }

@@ -1,7 +1,15 @@
-import { promoteMap } from "./promotions";
+
+const promotablePieces = [
+    "KY",
+    "KE",
+    "GI",
+    "KA",
+    "HI",
+    "FU",
+]
 
 class ShogiPiece {
-    /* ids:
+    /* names:
         KY: Lance
         KE: Knight
         KA: Bishop
@@ -11,15 +19,14 @@ class ShogiPiece {
         KI: Gold
         GI: Silver
     */
+    
     constructor(name, originalColor, color, id, promoted = false) {
         this.name = name;
         this.originalColor = originalColor;
         this.color = color;
         this.id = id;
-        this.promotable = name in promoteMap;
-        if(this.promotable) {
-            this.promoted = promoted
-        }
+        this.promotable = name in promotablePieces;
+        this.promoted = promoted
     }
 
     // Sets the square that this piece resides on.
@@ -31,7 +38,6 @@ class ShogiPiece {
     // TODO Promotes this piece if it is promotable.
     promote() {
         if (this.promotable) {
-            this.name = promoteMap[this.name]
             this.promoted = true
         }
     }

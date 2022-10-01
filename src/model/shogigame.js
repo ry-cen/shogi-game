@@ -3,7 +3,6 @@ import ShogiPiece from './shogipiece.js'
 import Square from './square.js';
 
 /*
-    TODO Unify coordinate systems
     Coordinate Systems:
     Library Game - 1-indexed (1-9) - File-Rank
     Board - 0-indexed (0-8) - Rank-File
@@ -12,12 +11,32 @@ import Square from './square.js';
 class ShogiGame {
     constructor(thisPlayerIsBlack) {
         this.thisPlayerIsBlack = thisPlayerIsBlack
+
+        // Side based conversions to sink board with game instance.
+        this.side_x = this.thisPlayerIsBlack ? {
+            0: 9, 1: 8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8: 1
+        } : {
+            0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9
+        }
+
+        this.side_y = this.thisPlayerIsBlack ? {
+            0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9
+        } : {
+            0: 9, 1: 8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8: 1
+        }
+
         this.game = new Shogi();
+        this.game.initialize();
+
         this.board = this.makeBoard();
-        this.kingInCheck = false;
-        this.enemyKingInCheck = true;
-        this.color = thisPlayerIsBlack ? "black" : "white";
-        this.enemyColor = thisPlayerIsBlack ? "white" : "black";
+
+        this.color = thisPlayerIsBlack ? Color.Black : Color.White;
+        this.enemyColor = thisPlayerIsBlack ? Color.White : Color.Black;
+
+        this.hand = []
+        this.enemyHand = []
+
+        
     }
 
     // Checks if the current board state would be a checkmate
@@ -26,80 +45,54 @@ class ShogiGame {
         // attackers attacking the king cant be attacked
         // all drops wont remove check
 
-        const convert = {
-            0:9, 1:8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8:1
-        }
+        let allPseudoLegalMoves = [];
 
-        // Finds the king then finds all the moves that the king could make.
-        let coords = isMyMove ? this.findPiece(this.board, this.enemyKingId) : this.findPiece(this.board, this.kingId);
-        let checkmateAttacker = [];
-        let kingMoves = this.game.getMovesFrom(convert[coords[0]], coords[1] + 1);
-
-        // Figures out if the king has any valid moves away
         for (let i = 0; i < 9; i++) {
             for (let j = 0; j < 9; j++) {
                 const piece = this.board[i][j].getPiece();
                 if (!piece || piece.color === (isMyMove ? this.enemyColor : this.color)) {
                     continue;
                 }
-                const moves = this.game.getMovesFrom(convert[j], i+1);
-                
-                for (let k = 0; k < kingMoves.length; k++) {
-                    if (kingMoves[k] === true) {
-                        continue
-                    }
-                    if (moves.some((move) => move.to.x === kingMoves[k].to.x && move.to.y === kingMoves[k].to.y)) {
-                        kingMoves[k] = true;
-                    }
-                }
+                const moves = this.game.getMovesFrom(this.side_x[j], this.side_y[i]);
+                allPseudoLegalMoves = allPseudoLegalMoves.concat(moves)
             }
         }
 
+        let allPseudoLegalDrops = this.game.getDropsBy((isMyMove ? this.color : this.enemyColor));
 
-        console.log(kingMoves.every((move) => move === true))
-
-
-        // Finds the locations of any pieces that are currently attacking the king.
-        for (let i = 0; i < 9; i++) {
-            for (let j = 0; j < 9; j++) {
-                const piece = this.board[i][j].getPiece();
-                if (!piece || piece.color === (isMyMove ? this.enemyColor : this.color)) {
-                    continue;
-                }
-                const moves = this.game.getMovesFrom(convert[j], i+1);
-                if (moves.some((move) => move.to.x === convert[coords[0]] && move.to.y === coords[1]+1)) {
-                    checkmateAttacker.push([convert[j], i + 1])
-                }
-
+        for (let i = 0; i < allPseudoLegalMoves.length; i++) {
+            if (this.checkForCheck([allPseudoLegalMoves[i].from.x, allPseudoLegalMoves[i].from.y], [allPseudoLegalMoves[i].to.x, allPseudoLegalMoves[i].to.y], isMyMove)) {
+                continue
+            } else {
+                return false
             }
         }
 
-        console.log(checkmateAttacker)
-        
-        
-        const canKingMove = kingMoves.length != 0
-        
-        // Find any locations where a drop can block the attackers and remove check.
+        for (let i = 0; i < allPseudoLegalDrops.length; i++) {
+            if (this.checkForCheckDrop([allPseudoLegalDrops[i].to.x, allPseudoLegalDrops[i].to.y], isMyMove, allPseudoLegalDrops[i].kind)) {
+                continue
+            } else {
+                return false
+            }
+        }
+
+        return true
+
     }
 
     // Figures out if the current player is in check.
     isInCheck(board, isMyMove) {
 
-        const convert = {
-            0:9, 1:8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8:1
-        }
-
         // Finds if there are any pieces that are attacking the king.
-        let coords = isMyMove ? this.findPiece(board, this.kingId) : this.findPiece(board, this.enemyKingId);
+        let coords = isMyMove ? this.findPieceOnBoard(board, this.kingId) : this.findPieceOnBoard(board, this.enemyKingId);
         for (let i = 0; i < 9; i++) {
             for (let j = 0; j < 9; j++) {
                 const piece = board[i][j].getPiece();
                 if (!piece || piece.color === (isMyMove ? this.color : this.enemyColor)) {
                     continue;
                 }
-                const moves = this.game.getMovesFrom(convert[j], i+1);
-                if (moves.some((move) => move.to.x === convert[coords[0]] && move.to.y === coords[1]+1)) {
-                    console.log("oute")
+                const moves = this.game.getMovesFrom(this.side_x[j], this.side_y[i]);
+                if (moves.some((move) => move.to.x === this.side_x[coords[0]] && move.to.y === this.side_y[coords[1]])) {
                     return true;
                 }
 
@@ -111,23 +104,16 @@ class ShogiGame {
 
     // Creates the board with the correct pieces and squares and returns it.
     makeBoard() {
-        const side = this.thisPlayerIsBlack ? {
-            0:'0', 1:'1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8:'8'
-        } : {
-            0:'8', 1:'7', 2: '6', 3: '5', 4: '4', 5: '3', 6: '2', 7: '1', 8:'0'
-        }
 
         const midConvert = {1: 7, 7: 1}
-
-        this.game.initialize();
 
         let board = []
 
         for (let i = 0; i < 9; i++) {
             let row = []
             for (let j = 0; j < 9; j++) {
-                const canvasCoord = [((j+1) * 77 + 292), ((i+1) * 77 + 76)]
-                const square = new Square(j, i, canvasCoord, null);
+                const canvasCoord = [((j+1) * 77 + 375), ((i+1) * 77 + 76)]
+                const square = new Square(this.side_x[j], this.side_y[i], canvasCoord, null);
                 row.push(square)
             }
 
@@ -140,23 +126,23 @@ class ShogiGame {
         for (let j = 0; j < 9; j += 8) {
             for (let i = 0; i < 9; i++) {
                 if (j === 0) {
-                    board[j][i].setPiece(new ShogiPiece(backRank[i], this.thisPlayerIsBlack ? "white" : "black", this.thisPlayerIsBlack ? "white" : "black", side[i] + side[j]))
+                    board[j][i].setPiece(new ShogiPiece(backRank[i], this.thisPlayerIsBlack ? Color.White : Color.Black, this.thisPlayerIsBlack ? Color.White : Color.Black, String(this.side_x[i]) + String(this.side_y[j])))
                     if (i === 4) {
-                        this.enemyKingId = side[i] + side[j]
+                        this.enemyKingId = String(this.side_x[i]) + String(this.side_y[j])
                     }
                     if (i === 1 || i === 7) {
-                        board[j + 1][i].setPiece(new ShogiPiece(midRank[midConvert[i]], this.thisPlayerIsBlack ? "white" : "black", this.thisPlayerIsBlack ? "white" : "black", side[i] + side[j + 1]))
+                        board[j + 1][i].setPiece(new ShogiPiece(midRank[midConvert[i]], this.thisPlayerIsBlack ? Color.White : Color.Black, this.thisPlayerIsBlack ? Color.White : Color.Black, String(this.side_x[i]) + String(this.side_y[j+1])))
                     }
-                    board[j+2][i].setPiece(new ShogiPiece("FU", this.thisPlayerIsBlack ? "white" : "black", this.thisPlayerIsBlack ? "white" : "black", side[i] + side[j + 2]))
+                    board[j+2][i].setPiece(new ShogiPiece("FU", this.thisPlayerIsBlack ? Color.White : Color.Black, this.thisPlayerIsBlack ? Color.White : Color.Black, String(this.side_x[i]) + String(this.side_y[j + 2])))
                 } else {
-                    board[j][i].setPiece(new ShogiPiece(backRank[i], this.thisPlayerIsBlack ? "black" : "white", this.thisPlayerIsBlack ? "black" : "white", side[i] + side[j]))
+                    board[j][i].setPiece(new ShogiPiece(backRank[i], this.thisPlayerIsBlack ? Color.Black : Color.White, this.thisPlayerIsBlack ? Color.Black : Color.White, String(this.side_x[i]) + String(this.side_y[j])))
                     if (i === 4) {
-                        this.kingId = side[i] + side[j]
+                        this.kingId = String(this.side_x[i]) + String(this.side_y[j])
                     }
                     if (i === 1 || i === 7) {
-                        board[j - 1][i].setPiece(new ShogiPiece(midRank[i], this.thisPlayerIsBlack ? "black" : "white", this.thisPlayerIsBlack ? "black" : "white", side[i] + side[j - 1]))
+                        board[j - 1][i].setPiece(new ShogiPiece(midRank[i], this.thisPlayerIsBlack ? Color.Black : Color.White, this.thisPlayerIsBlack ? Color.Black : Color.White, String(this.side_x[i]) + String(this.side_y[j - 1])))
                     }
-                    board[j - 2][i].setPiece(new ShogiPiece("FU", this.thisPlayerIsBlack ? "black" : "white", this.thisPlayerIsBlack ? "black" : "white", side[i] + side[j - 2]))
+                    board[j - 2][i].setPiece(new ShogiPiece("FU", this.thisPlayerIsBlack ? Color.Black : Color.White, this.thisPlayerIsBlack ? Color.Black : Color.White, String(this.side_x[i]) + String(this.side_y[j - 2])))
                 }
             }
         }
@@ -174,49 +160,125 @@ class ShogiGame {
         this.board = board;
     }
 
+    getHand() {
+        return this.hand;
+    }
+
+    getEnemyHand() {
+        return this.enemyHand;
+    }
+
+    checkForCheck(from, to, isMyMove) {
+        const reverse_side_x = this.thisPlayerIsBlack ? {
+            9: 0, 8: 1, 7: 2, 6: 3, 5: 4, 4: 5, 3: 6, 2: 7, 1: 8
+        } : {
+            1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8
+        }
+
+        const reverse_side_y = this.thisPlayerIsBlack ? {
+            1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8
+        } : {
+            9: 0, 8: 1, 7: 2, 6: 3, 5: 4, 4: 5, 3: 6, 2: 7, 1: 8
+        }
+
+        let currentBoard = this.getBoard();
+        let tmpBoard = this.cloneBoard(currentBoard);
+
+        const y = reverse_side_y[from[1]];
+        const x = reverse_side_x[from[0]];
+
+        const to_y = reverse_side_y[to[1]];
+        const to_x = reverse_side_x[to[0]];
+        
+        const ogPiece = currentBoard[y][x].getPiece();
+        const capPiece = currentBoard[to_y][to_x].getPiece() != null ? currentBoard[to_y][to_x].getPiece().name : false
+
+        tmpBoard[y][x].removePiece();
+        tmpBoard[to_y][to_x].setPiece(ogPiece);
+
+
+        this.game.move(this.side_x[x], this.side_y[y], this.side_x[to_x], this.side_y[to_y], false);
+
+
+        if (this.isInCheck(tmpBoard, isMyMove)) {
+            this.game.unmove(this.side_x[x], this.side_y[y], this.side_x[to_x], this.side_y[to_y], false, capPiece);
+            return true;
+        }
+
+        this.game.unmove(this.side_x[x], this.side_y[y], this.side_x[to_x], this.side_y[to_y], false, capPiece);
+        return false
+    }
+
+    checkForCheckDrop(to, isMyMove, kind) {
+        const reverse_side_x = this.thisPlayerIsBlack ? {
+            9: 0, 8: 1, 7: 2, 6: 3, 5: 4, 4: 5, 3: 6, 2: 7, 1: 8
+        } : {
+            1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8
+        }
+
+        const reverse_side_y = this.thisPlayerIsBlack ? {
+            1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8
+        } : {
+            9: 0, 8: 1, 7: 2, 6: 3, 5: 4, 4: 5, 3: 6, 2: 7, 1: 8
+        }
+
+        let currentBoard = this.getBoard();
+        let tmpBoard = this.cloneBoard(currentBoard);
+
+        const to_y = reverse_side_y[to[1]];
+        const to_x = reverse_side_x[to[0]];
+
+        tmpBoard[to_y][to_x].setPiece(new ShogiPiece(kind, null, isMyMove ? this.enemyColor : this.color, '00'));
+
+        this.game.drop(to[0], to[1], kind)
+
+        if (this.isInCheck(tmpBoard, isMyMove)) {
+            this.game.undrop(to[0], to[1])
+            return true;
+        }
+
+        this.game.undrop(to[0], to[1])
+        return false
+    }
+
     //move piece to a given coordinate
     // pieceId
     // to : [x, y]
     movePiece(pieceId, to, isMyMove) {
 
-        // Side conversions
-        const side = isMyMove ? {
-            0:0, 1:1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8:8
-        } : {
-            0:8, 1:7, 2: 6, 3: 5, 4: 4, 5: 3, 6: 2, 7: 1, 8:0
-        }
-
-        // Conversions to 1-indexed coordinate system for shogi library
-        const convert = {
-            0:9, 1:8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8:1
+        if (to === false) {
+            return "didn't move"
         }
 
         // Clones the board 
         let currentBoard = this.getBoard()
-        let tmpBoard = this.cloneBoard(currentBoard);
 
-        const pieceCoords = this.findPiece(currentBoard, pieceId)
+        const pieceCoords = this.findPieceOnBoard(this.getBoard(), pieceId)
+
 
         if (!pieceCoords) {
-            return
+            return this.dropPiece(pieceId, to, isMyMove, currentBoard);
         }
 
-        const y = pieceCoords[1]
-        const x = pieceCoords[0]
+        let tmpBoard = this.cloneBoard(currentBoard);
 
         const to_y = to[1]
         const to_x = to[0]
+
+        const y = pieceCoords[1]
+        const x = pieceCoords[0]
 
         if(x === to_x && y === to_y) {
             return "didn't move"
         } 
         
         const ogPiece = currentBoard[y][x].getPiece();
+        const capPiece = currentBoard[to_y][to_x].getPiece() != null ? currentBoard[to_y][to_x].getPiece().name : false
         
         // Attempts to check if the move is valid in the library
         try {
             
-            this.game.move(convert[x], y+1, convert[to_x], to_y+1, false);
+            this.game.move(this.side_x[x], this.side_y[y], this.side_x[to_x], this.side_y[to_y], false);
         } catch (error) {
             
             console.log(error)
@@ -228,31 +290,94 @@ class ShogiGame {
         tmpBoard[to_y][to_x].setPiece(ogPiece);
 
         if (this.isInCheck(tmpBoard, isMyMove)) {
-            if(isMyMove) {
-                this.kingInCheck = true;
-            } else {
-                this.enemyKingInCheck = true;
-            }
-            this.game.unmove(convert[x], y+1, convert[to_x], to_y+1, false);
-            this.setBoard(currentBoard)
+            this.game.unmove(this.side_x[x], this.side_y[y], this.side_x[to_x], this.side_y[to_y], false, capPiece);
             return "didn't move"
-        }
-
-        if(isMyMove) {
-            this.kingInCheck = false;
-        } else {
-            this.enemyKingInCheck = false;
         }
 
         // Makes the move on the current board if there are no issues.
         currentBoard[y][x].removePiece();
-        currentBoard[to_y][to_x].setPiece(ogPiece);
+        const pieceToHand = currentBoard[to_y][to_x].setPiece(ogPiece);
+
+        if (pieceToHand != false) {
+            if (!isMyMove) {
+                const r = (Math.floor(this.enemyHand.length / 6)) + 1;
+                const c = (this.enemyHand.length % 6) + 1;
+                this.enemyHand.push(new Square(0, 0, [-(c*30) + 350, (r*60) + 86], pieceToHand))
+            } else {
+                const r = (Math.floor(this.hand.length / 6)) + 1;
+                const c = (this.hand.length % 6) + 1;
+                this.hand.push(new Square(0, 0, [(c*30) + 1170, -(r*60) + 829], pieceToHand))
+            }
+        }
 
         this.setBoard(currentBoard)
     }
+    
+    dropPiece(pieceId, to, isMyMove, currentBoard) {
+        const to_y = to[1]
+        const to_x = to[0]
+
+        let currentHand = isMyMove ? this.hand : this.enemyHand;
+        const pieceLoc = this.findPieceInHand(currentHand, pieceId);
+
+        if (pieceLoc === false) {
+
+            return
+        } else {
+            const droppingPiece = currentHand[pieceLoc].getPiece()
+            
+            const pieceType = droppingPiece.name
+
+            try {
+                this.game.drop(this.side_x[to_x], this.side_y[to_y], pieceType)
+            } catch (error) {
+                
+                console.log(error)
+                return "didn't move"
+            }
+
+            let tmpBoard = this.cloneBoard(currentBoard);
+
+            tmpBoard[to_y][to_x].setPiece(droppingPiece);
+            
+            if (this.isInCheck(tmpBoard, isMyMove)) {
+                this.game.undrop(this.side_x[to_x], this.side_y[to_y]);
+                return "didn't move"
+            }
+
+            currentBoard[to_y][to_x].setPiece(droppingPiece);
+
+            currentHand.splice(pieceLoc, 1);
+            if (!isMyMove) {
+                this.enemyHand = currentHand;
+            } else {
+                this.hand = currentHand;
+            }
+
+            this.rearrangeHands();
+
+            this.setBoard(currentBoard);
+
+            return "needs update"
+        }
+    }
+
+    rearrangeHands() {
+        for (let i = 0; i < this.enemyHand.length; i++) {
+            const r = (Math.floor(i / 6)) + 1;
+            const c = (i % 6) + 1;
+            this.enemyHand[i].setCanvasCoord([-(c*30) + 350, (r*60) + 86])
+        }
+
+        for (let i = 0; i < this.hand.length; i++) {
+            const r = (Math.floor(i / 6)) + 1;
+            const c = (i % 6) + 1;
+            this.hand[i].setCanvasCoord([(c*30) + 1170, -(r*60) + 829])
+        }
+    }
 
     // Finds a piece of the given piece id on the given board and returns the coordinates.
-    findPiece(board, pieceId) {
+    findPieceOnBoard(board, pieceId) {
         for (var i = 0; i < 9; i++) {
             for (var j = 0; j < 9; j++) {
                 if (board[i][j].getPieceId() === pieceId) {
@@ -260,7 +385,21 @@ class ShogiGame {
                 }
             }
         }
+
+        return false;
     }
+
+    findPieceInHand(hand, pieceId) {
+        for (var i = 0; i < hand.length; i++) {
+            if (hand[i].getPieceId() === pieceId) {
+                return i;
+            }
+        }
+
+        return false;
+    }
+
+    
 
     // Clones a given board and returns a deep copy.
     cloneBoard(board) {
@@ -277,6 +416,7 @@ class ShogiGame {
 
         return newBoard
     }
+
 }
 
 export default ShogiGame

@@ -1,9 +1,10 @@
 import React from "react";
 import Piece from "./piece.js";
 import ShogiGame from "../model/shogigame.js"
-import BoardPic from "../assets/board.png"
+import BoardPic from "../assets/brownboard.png"
 import imagemap from "./imagemap.js"
-import { Stage, Layer, Group } from "react-konva";
+import { Stage, Layer, Image, Rect } from "react-konva";
+import { Color } from "shogi.js";
 
 
 
@@ -15,8 +16,11 @@ class Game extends React.Component {
             gameState: new ShogiGame(this.props.thisPlayerIsBlack),
             playersTurnIsBlack: true,
             draggedPieceTargetId: "",
-            gameKey: 0
+            gameKey: 0,
+            boardImage: new window.Image()
         }
+
+        this.state.boardImage.src = BoardPic;
     }
 
 
@@ -38,7 +42,14 @@ class Game extends React.Component {
     }
 
     movePiece = (selectedId, position, currentGame, isMyMove) => {
+
         const update = currentGame.movePiece(selectedId, position, isMyMove)
+
+        if (update === "needs update") {
+            this.setState({
+                gameKey: this.state.gameKey === 1 ? 0 : 1
+            })
+        }
 
         if (update === "didn't move") {
             this.setState({
@@ -54,11 +65,13 @@ class Game extends React.Component {
            
         })
 
-        this.props.playAudio()
-
-        if (currentGame.isCheckmate(isMyMove)) {
-            console.log("Checkmate")
+        if (currentGame.isInCheck(currentGame.getBoard(), !isMyMove)) {
+            if (currentGame.isCheckmate(!isMyMove)) {
+                alert("checkmate")
+            }
         }
+
+        this.props.playAudio()
 
         this.setState({
             playersTurnIsBlack: !this.state.playersTurnIsBlack
@@ -84,45 +97,86 @@ class Game extends React.Component {
             }
         }
 
+        if (shortestDistance > 50) {
+            return false
+        }
+
         return hashmap[shortestDistance]
     }
 
     
     render() {
         return(
-            <div style={{
-                backgroundImage: `url(${BoardPic})`,
-                backgroundPosition: "Center",
-                backgroundRepeat: "no-repeat",
-                width: "1200px",
-                height: "768px",
-            }}>
-                <Stage width={1200} height={768}>
+            <div>
+                <Stage width={1366} height={768} position={"center"}>
                     <Layer>
-                    {this.state.gameState.getBoard().map((row) => {
-                        return (<React.Fragment>
-                                {row.map((square) => {
-                                    if (square.isOccupied()) {                                    
-                                        return (
-                                            <Piece
-                                                name = {square.getPiece().name}
-                                                x = {square.getCanvasCoord()[0]-77}
-                                                y = {square.getCanvasCoord()[1]-77}
-                                                imgurls = {imagemap[square.getPiece().name]}
-                                                isBlack = {square.getPiece().color === "black"}
-                                                gameKey = {this.state.gameKey}
-                                                onDragStart = {this.startDragging}
-                                                onDragEnd = {this.endDragging}
-                                                draggedPieceTargetId = {this.state.draggedPieceTargetId}
-                                                id = {square.getPieceId()}
-                                                thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
-                                                playersTurnIsBlack = {this.state.playersTurnIsBlack}
-                                            />)
-                                    }
-                                    return
-                                })}
-                            </React.Fragment>)
-                    })}
+                        <Image image={this.state.boardImage} x={299} />
+                        <Rect width={250} height={250} x={43} y={10} fill="#9c7b62"/>
+                        <Rect width={250} height={250} x={1073} y={508} fill="#9c7b62"/>
+                        {this.state.gameState.getBoard().map((row) => {
+                            return (<React.Fragment>
+                                    {row.map((square) => {
+                                        if (square.isOccupied()) {                                    
+                                            return (
+                                                <Piece
+                                                    name = {square.getPiece().name}
+                                                    x = {square.getCanvasCoord()[0]-77}
+                                                    y = {square.getCanvasCoord()[1]-77}
+                                                    imgurls = {imagemap[(square.getPiece().promoted ? 1 : 0)][square.getPiece().name]}
+                                                    isBlack = {square.getPiece().color === Color.Black}
+                                                    gameKey = {this.state.gameKey}
+                                                    onDragStart = {this.startDragging}
+                                                    onDragEnd = {this.endDragging}
+                                                    draggedPieceTargetId = {this.state.draggedPieceTargetId}
+                                                    id = {square.getPieceId()}
+                                                    thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
+                                                    playersTurnIsBlack = {this.state.playersTurnIsBlack}
+                                                />)
+                                        }
+                                        return
+                                    })}
+                                </React.Fragment>)
+                        })}
+                        {this.state.gameState.getHand().map((square) => {
+                                        if (square.isOccupied()) {                                    
+                                            return (
+                                                <Piece
+                                                    name = {square.getPiece().name}
+                                                    x = {square.getCanvasCoord()[0]-77}
+                                                    y = {square.getCanvasCoord()[1]-77}
+                                                    imgurls = {imagemap[(square.getPiece().promoted ? 1 : 0)][square.getPiece().name]}
+                                                    isBlack = {square.getPiece().color === Color.Black}
+                                                    gameKey = {this.state.gameKey}
+                                                    onDragStart = {this.startDragging}
+                                                    onDragEnd = {this.endDragging}
+                                                    draggedPieceTargetId = {this.state.draggedPieceTargetId}
+                                                    id = {square.getPieceId()}
+                                                    thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
+                                                    playersTurnIsBlack = {this.state.playersTurnIsBlack}
+                                                />)
+                                        }
+                                        return
+                        })}
+                        {this.state.gameState.getEnemyHand().map((square) => {
+                                        if (square.isOccupied()) {                                    
+                                            return (
+                                                <Piece
+                                                    name = {square.getPiece().name}
+                                                    x = {square.getCanvasCoord()[0]-77}
+                                                    y = {square.getCanvasCoord()[1]-77}
+                                                    imgurls = {imagemap[(square.getPiece().promoted ? 1 : 0)][square.getPiece().name]}
+                                                    isBlack = {square.getPiece().color === Color.Black}
+                                                    gameKey = {this.state.gameKey}
+                                                    onDragStart = {this.startDragging}
+                                                    onDragEnd = {this.endDragging}
+                                                    draggedPieceTargetId = {this.state.draggedPieceTargetId}
+                                                    id = {square.getPieceId()}
+                                                    thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
+                                                    playersTurnIsBlack = {this.state.playersTurnIsBlack}
+                                                />)
+                                        }
+                                        return
+                        })}
                     </Layer>
                 </Stage>
             </div>
