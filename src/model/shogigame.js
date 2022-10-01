@@ -272,18 +272,16 @@ class ShogiGame {
         const to_x = to[0]
 
         let currentHand = isMyMove ? this.hand : this.enemyHand;
-        console.log(currentHand)
         const pieceLoc = this.findPieceInHand(currentHand, pieceId);
 
         if (pieceLoc === false) {
-            console.log(pieceLoc)
+
             return
         } else {
             const droppingPiece = currentHand[pieceLoc].getPiece()
             
             const pieceType = droppingPiece.name
 
-            console.log(pieceType);
             try {
                 this.game.drop(this.side_x[to_x], this.side_y[to_y], pieceType)
             } catch (error) {
@@ -292,17 +290,22 @@ class ShogiGame {
                 return "didn't move"
             }
 
-            currentBoard[to_y][to_x].setPiece(droppingPiece)
-            console.log(currentHand)
-            
-            console.log("dropped at" , this.side_x[to_x], this.side_y[to_y])
+            let tmpBoard = this.cloneBoard(currentBoard);
 
-            currentHand.splice(pieceLoc, 1)
+            tmpBoard[to_y][to_x].setPiece(droppingPiece);
             
+            if (this.isInCheck(tmpBoard, isMyMove)) {
+                this.game.undrop(this.side_x[to_x], this.side_y[to_y]);
+                return "didn't move"
+            }
+
+            currentBoard[to_y][to_x].setPiece(droppingPiece);
+
+            currentHand.splice(pieceLoc, 1);
             if (!isMyMove) {
                 this.enemyHand = currentHand;
             } else {
-                this.hand = currentHand
+                this.hand = currentHand;
             }
 
             this.rearrangeHands();
