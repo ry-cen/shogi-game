@@ -17,7 +17,9 @@ class Game extends React.Component {
             playersTurnIsBlack: true,
             draggedPieceTargetId: "",
             gameKey: 0,
-            boardImage: new window.Image()
+            boardImage: new window.Image(),
+            piecesDraggable: true,
+            pieceUpForPromotion: ""
         }
 
         this.state.boardImage.src = BoardPic;
@@ -41,28 +43,34 @@ class Game extends React.Component {
         this.movePiece(selectedId, position, currentGame, this.state.playersTurnIsBlack);
     }
 
-    movePiece = (selectedId, position, currentGame, isMyMove) => {
+    movePiece = (selectedId, position, currentGame, isMyMove, promote = false) => {
 
-        const update = currentGame.movePiece(selectedId, position, isMyMove)
+        const update = currentGame.movePiece(selectedId, position, isMyMove, promote)
 
         if (update === "needs update") {
             this.setState({
                 gameKey: this.state.gameKey === 1 ? 0 : 1
             })
-        }
-
-        if (update === "didn't move") {
+        } else if (update === "didn't move") {
             this.setState({
                 gameKey: this.state.gameKey === 1 ? 0 : 1,
                 draggedPieceTargetId: ""
             })
             return
+        } else if (update === "handle promotion") {
+            this.setState({
+                gameKey: this.state.gameKey === 1 ? 0 : 1,
+                draggedPieceTargetId: "",
+                pieceUpForPromotion: position,
+                gameState: currentGame
+            })
+            handlePromotion()
+            return
         }
 
         this.setState({
             draggedPieceTargetId: "",
-            gameState: currentGame,
-           
+            gameState: currentGame
         })
 
         if (currentGame.isInCheck(currentGame.getBoard(), !isMyMove)) {
@@ -128,6 +136,7 @@ class Game extends React.Component {
                                                     onDragStart = {this.startDragging}
                                                     onDragEnd = {this.endDragging}
                                                     draggedPieceTargetId = {this.state.draggedPieceTargetId}
+                                                    piecesDraggable = {this.state.piecesDraggable}
                                                     id = {square.getPieceId()}
                                                     thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
                                                     playersTurnIsBlack = {this.state.playersTurnIsBlack}

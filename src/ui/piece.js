@@ -1,5 +1,3 @@
-import { Blur } from 'konva/lib/filters/Blur';
-import { RGBA } from 'konva/lib/filters/RGBA';
 import React from 'react';
 import { Image } from 'react-konva';
 import useImage from 'use-image';
@@ -10,7 +8,7 @@ const Piece = (props) => {
     const [image] = useImage(props.imgurls[color]);
     const ownsPiece = props.thisPlayersColorBlack === props.isBlack;
     const playersTurn = props.thisPlayersColorBlack === props.playersTurnIsBlack;
-    const currentTurnTEMP = props.isBlack === props.playersTurnIsBlack;
+    const currentTurnTEMP = (props.isBlack === props.playersTurnIsBlack) && props.piecesDraggable;
 
     const isDragged = props.draggedPieceTargetId === props.id
 

@@ -244,7 +244,7 @@ class ShogiGame {
     //move piece to a given coordinate
     // pieceId
     // to : [x, y]
-    movePiece(pieceId, to, isMyMove) {
+    movePiece(pieceId, to, isMyMove, promote) {
 
         if (to === false) {
             return "didn't move"
@@ -298,6 +298,11 @@ class ShogiGame {
         currentBoard[y][x].removePiece();
         const pieceToHand = currentBoard[to_y][to_x].setPiece(ogPiece);
 
+        // For socket io moves.
+        if (promote) {
+            this.promotePiece(to);
+        }
+
         if (pieceToHand != false) {
             if (!isMyMove) {
                 const r = (Math.floor(this.enemyHand.length / 6)) + 1;
@@ -311,6 +316,11 @@ class ShogiGame {
         }
 
         this.setBoard(currentBoard)
+    }
+
+    // Promotes a piece on the board and game engine at a location.
+    promotePiece(pieceLoc) {
+
     }
     
     dropPiece(pieceId, to, isMyMove, currentBoard) {
