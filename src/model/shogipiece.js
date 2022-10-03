@@ -20,9 +20,8 @@ class ShogiPiece {
         GI: Silver
     */
     
-    constructor(name, originalColor, color, id, promoted = false) {
+    constructor(name, color, id, promoted = false) {
         this.name = name;
-        this.originalColor = originalColor;
         this.color = color;
         this.id = id;
         this.promotable = name in promotablePieces;

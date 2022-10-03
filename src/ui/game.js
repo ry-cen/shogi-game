@@ -124,7 +124,7 @@ class Game extends React.Component {
                         {this.state.gameState.getBoard().map((row) => {
                             return (<React.Fragment>
                                     {row.map((square) => {
-                                        if (square.isOccupied()) {                                    
+                                        if (square.isOccupied()) {                       
                                             return (
                                                 <Piece
                                                     name = {square.getPiece().name}
