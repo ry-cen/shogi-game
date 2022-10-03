@@ -1,10 +1,13 @@
 import React from "react";
 import Piece from "./piece.js";
+import { promoteMap } from "../model/promotions.js";
+import PromotionImage from "./promotionImage.js";
 import ShogiGame from "../model/shogigame.js"
 import BoardPic from "../assets/brownboard.png"
 import imagemap from "./imagemap.js"
 import { Stage, Layer, Image, Rect } from "react-konva";
 import { Color } from "shogi.js";
+import { RGBA } from "konva/lib/filters/RGBA.js";
 
 
 
@@ -19,7 +22,9 @@ class Game extends React.Component {
             gameKey: 0,
             boardImage: new window.Image(),
             piecesDraggable: true,
-            pieceUpForPromotion: ""
+            pieceUpForPromotion: "",
+            pieceUpForPromotionLoc: "",
+            promotionScreenShow: false
         }
 
         this.state.boardImage.src = BoardPic;
@@ -40,7 +45,6 @@ class Game extends React.Component {
         const position = this.triangulate(e.target.x()+77, e.target.y()+77, currentBoard);
         const selectedId = this.state.draggedPieceTargetId;
         
-        console.log(position)
         this.movePiece(selectedId, position, currentGame, this.props.thisPlayerIsBlack === this.state.playersTurnIsBlack);
     }
 
@@ -58,17 +62,19 @@ class Game extends React.Component {
                 draggedPieceTargetId: ""
             })
             return
+        } else if (update === "handle promotion") {
+            let promotePiece = currentGame.findPieceKindOnBoard(selectedId)
+            this.setState({
+                gameKey: this.state.gameKey === 1 ? 0 : 1,
+                draggedPieceTargetId: "",
+                pieceUpForPromotion: promotePiece,
+                pieceUpForPromotionLoc: position,
+                piecesDraggable: false,
+                promotionScreenShow: true,
+                gameState: currentGame
+            })
+            return
         }
-        // } else if (update === "handle promotion") {
-        //     this.setState({
-        //         gameKey: this.state.gameKey === 1 ? 0 : 1,
-        //         draggedPieceTargetId: "",
-        //         pieceUpForPromotion: position,
-        //         gameState: currentGame
-        //     })
-        //     //handlePromotion()
-        //     return
-        // }
 
         this.setState({
             draggedPieceTargetId: "",
@@ -92,10 +98,10 @@ class Game extends React.Component {
 
 
     triangulate = (x, y, board) => {
-        var hashmap = {}
-        var shortestDistance = Infinity
-        for (var i = 0; i < 9; i++) {
-            for (var j = 0; j < 9; j++) {
+        let hashmap = {}
+        let shortestDistance = Infinity
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
                 const canvasCoord = board[i][j].getCanvasCoord()
                 const delta_x = canvasCoord[0] - x 
                 const delta_y = canvasCoord[1] - y
@@ -114,6 +120,30 @@ class Game extends React.Component {
         return hashmap[shortestDistance]
     }
 
+    handleNoPromotion = () => {
+        this.setState({
+            gameKey: this.state.gameKey === 1 ? 0 : 1,
+            pieceUpForPromotion: "",
+            pieceUpForPromotionLoc: "",
+            piecesDraggable: true,
+            promotionScreenShow: false,
+            playersTurnIsBlack: !this.state.playersTurnIsBlack
+        })
+    }
+
+    handlePromotion = () => {
+        this.state.gameState.promotePiece(this.state.pieceUpForPromotionLoc)
+        this.setState({
+            gameKey: this.state.gameKey === 1 ? 0 : 1,
+            pieceUpForPromotion: "",
+            pieceUpForPromotionLoc: "",
+            piecesDraggable: true,
+            promotionScreenShow: false,
+            playersTurnIsBlack: !this.state.playersTurnIsBlack
+        })
+
+    }
+
     
     render() {
         return(
@@ -129,10 +159,10 @@ class Game extends React.Component {
                                         if (square.isOccupied()) {                       
                                             return (
                                                 <Piece
-                                                    name = {square.getPiece().name}
+                                                    kind = {square.getPiece().kind}
                                                     x = {square.getCanvasCoord()[0]-77}
                                                     y = {square.getCanvasCoord()[1]-77}
-                                                    imgurls = {imagemap[(square.getPiece().promoted ? 1 : 0)][square.getPiece().name]}
+                                                    imgurls = {imagemap[square.getPiece().kind]}
                                                     isBlack = {square.getPiece().color === Color.Black}
                                                     gameKey = {this.state.gameKey}
                                                     onDragStart = {this.startDragging}
@@ -152,10 +182,10 @@ class Game extends React.Component {
                                         if (square.isOccupied()) {                                    
                                             return (
                                                 <Piece
-                                                    name = {square.getPiece().name}
+                                                    kind = {square.getPiece().kind}
                                                     x = {square.getCanvasCoord()[0]-77}
                                                     y = {square.getCanvasCoord()[1]-77}
-                                                    imgurls = {imagemap[(square.getPiece().promoted ? 1 : 0)][square.getPiece().name]}
+                                                    imgurls = {imagemap[square.getPiece().kind]}
                                                     isBlack = {square.getPiece().color === Color.Black}
                                                     gameKey = {this.state.gameKey}
                                                     onDragStart = {this.startDragging}
@@ -173,10 +203,10 @@ class Game extends React.Component {
                                         if (square.isOccupied()) {                                    
                                             return (
                                                 <Piece
-                                                    name = {square.getPiece().name}
+                                                    kind = {square.getPiece().kind}
                                                     x = {square.getCanvasCoord()[0]-77}
                                                     y = {square.getCanvasCoord()[1]-77}
-                                                    imgurls = {imagemap[(square.getPiece().promoted ? 1 : 0)][square.getPiece().name]}
+                                                    imgurls = {imagemap[square.getPiece().kind]}
                                                     isBlack = {square.getPiece().color === Color.Black}
                                                     gameKey = {this.state.gameKey}
                                                     onDragStart = {this.startDragging}
@@ -190,6 +220,27 @@ class Game extends React.Component {
                                         }
                                         return
                         })}
+                        {(this.state.promotionScreenShow) ?
+                            <div>
+                                <Rect width={1366} height={300} y={234} fill={"#000000AA"}/>
+                                <PromotionImage
+                                    imgurls = {imagemap[this.state.pieceUpForPromotion]}
+                                    gameKey = {this.state.gameKey}
+                                    onClick = {this.handleNoPromotion}
+                                    x={533}
+                                    y={384}
+                                />
+                                <PromotionImage
+                                    imgurls = {imagemap[promoteMap[this.state.pieceUpForPromotion]]}
+                                    gameKey = {this.state.gameKey}
+                                    onClick = {this.handlePromotion}
+                                    x={833}
+                                    y={384}
+
+                                />
+                            </div> 
+                            : ""
+                        }
                     </Layer>
                 </Stage>
             </div>

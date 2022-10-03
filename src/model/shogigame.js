@@ -1,5 +1,5 @@
 import { Shogi, Color } from 'shogi.js';
-import ShogiPiece from './shogipiece.js'
+import ShogiPiece from './shogipiece.js';
 import Square from './square.js';
 
 /*
@@ -87,7 +87,6 @@ class ShogiGame {
                 }
                 const moves = this.game.getMovesFrom(this.conv_x[j], this.conv_y[i]);
                 if (moves.some((move) => move.to.x === this.conv_x[coords[0]] && move.to.y === this.conv_y[coords[1]])) {
-                    console.log("oute")
                     return true;
                 }
 
@@ -182,7 +181,7 @@ class ShogiGame {
         const to_x = reverse_conv_x[to[0]];
         
         const ogPiece = currentBoard[y][x].getPiece();
-        const capPiece = currentBoard[to_y][to_x].getPiece() != null ? currentBoard[to_y][to_x].getPiece().name : false
+        const capPiece = currentBoard[to_y][to_x].getPiece() != null ? currentBoard[to_y][to_x].getPiece().kind : false
 
         tmpBoard[y][x].removePiece();
         tmpBoard[to_y][to_x].setPiece(ogPiece);
@@ -260,12 +259,12 @@ class ShogiGame {
         } 
         
         const ogPiece = currentBoard[y][x].getPiece();
-        const capPiece = currentBoard[to_y][to_x].getPiece() != null ? currentBoard[to_y][to_x].getPiece().name : false
+        const capPiece = currentBoard[to_y][to_x].getPiece() != null ? currentBoard[to_y][to_x].getPiece().kind : false
         
         // Attempts to check if the move is valid in the library
         try {
             console.log(this.conv_x[x], this.conv_y[y], "to", this.conv_x[to_x], this.conv_y[to_y]);
-            this.game.move(this.conv_x[x], this.conv_y[y], this.conv_x[to_x], this.conv_y[to_y], false);
+            this.game.move(this.conv_x[x], this.conv_y[y], this.conv_x[to_x], this.conv_y[to_y], promote);
         } catch (error) {
             
             console.log(error)
@@ -277,8 +276,7 @@ class ShogiGame {
         tmpBoard[to_y][to_x].setPiece(ogPiece);
 
         if (this.isInCheck(tmpBoard, isMyMove)) {
-            console.log("oute2")
-            this.game.unmove(this.conv_x[x], this.conv_y[y], this.conv_x[to_x], this.conv_y[to_y], false, capPiece);
+            this.game.unmove(this.conv_x[x], this.conv_y[y], this.conv_x[to_x], this.conv_y[to_y], promote, capPiece);
             return "didn't move"
         }
 
@@ -286,10 +284,14 @@ class ShogiGame {
         currentBoard[y][x].removePiece();
         const pieceToHand = currentBoard[to_y][to_x].setPiece(ogPiece);
 
+        if(this.isDeadEnd(ogPiece.kind, ogPiece.color, to_y) && !ogPiece.isPromoted()) {
+            currentBoard[to_y][to_x].getPiece().promote();
+        }
+
         // For socket io moves.
-        // if (promote) {
-        //     this.promotePiece(to);
-        // }
+        if (promote) {
+            currentBoard[to_y][to_x].getPiece().promote();;
+        }
 
         if (pieceToHand != false) {
             if (!isMyMove) {
@@ -304,11 +306,17 @@ class ShogiGame {
         }
 
         this.setBoard(currentBoard)
+
+        if (this.isPromoteRank(ogPiece.color, to_y, y) && ogPiece.isPromotable() && isMyMove && !promote) {
+            return "handle promotion"
+        }
     }
 
     // Promotes a piece on the board and game engine at a location.
     promotePiece(pieceLoc) {
-
+        console.log(pieceLoc)
+        this.board[pieceLoc[1]][pieceLoc[0]].getPiece().promote()
+        this.game.board[8-pieceLoc[0]][pieceLoc[1]].promote()
     }
     
     dropPiece(pieceId, to, isMyMove, currentBoard) {
@@ -324,7 +332,7 @@ class ShogiGame {
         } else {
             const droppingPiece = currentHand[pieceLoc].getPiece()
             
-            const pieceType = droppingPiece.name
+            const pieceType = droppingPiece.kind
 
             try {
                 this.game.drop(this.conv_x[to_x], this.conv_y[to_y], pieceType)
@@ -387,6 +395,18 @@ class ShogiGame {
         return false;
     }
 
+    findPieceKindOnBoard(pieceId) {
+        for (var i = 0; i < 9; i++) {
+            for (var j = 0; j < 9; j++) {
+                if (this.board[i][j].getPieceId() === pieceId) {
+                    return this.board[i][j].getPiece().kind
+                }
+            }
+        }
+
+        return false;
+    }
+
     findPieceInHand(hand, pieceId) {
         for (var i = 0; i < hand.length; i++) {
             if (hand[i].getPieceId() === pieceId) {
@@ -395,6 +415,18 @@ class ShogiGame {
         }
 
         return false;
+    }
+
+    // Returns if piece should be promoted because of dead end.
+    isDeadEnd(kind, color, y) {
+        let deadEndY = color === Color.Black ? {"KE": 1, "FU": 0, "KY": 0} : {"KE": 7, "FU": 8, "KY": 8};
+
+        return color === Color.Black ? y <= deadEndY[kind] : y >= deadEndY[kind];
+
+    }
+
+    isPromoteRank(color, to_y, y) {
+        return ((color === Color.Black) ? (to_y <= 2) : (to_y >= 6)) || ((color === Color.Black) ? (y <= 2) : (y >= 6));
     }
 
     

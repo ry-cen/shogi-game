@@ -13,22 +13,25 @@ class Square {
         if (newPiece === null & this.piece === null) {
             return false;
         } else if (newPiece === null) {
-            // use remove piece
             return false;
         } else if (this.piece === null) {
             this.piece = newPiece;
             return false;
         } else {
-            var tempPiece = this.piece;
+            let tempPiece = this.piece;
             this.piece = newPiece;
-            tempPiece.color = tempPiece.color === Color.Black ? Color.White : Color.Black;
+            
+            console.log(tempPiece)
+            tempPiece.unpromote();
+            tempPiece.switchColor();
+            console.log(tempPiece)
+
             return tempPiece;
         }
     }
 
     // Removes the piece that is currently on this square.
     removePiece() {
-        this.piece.setSquare(null);
         this.piece = null;
     }
 

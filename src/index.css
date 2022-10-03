@@ -31,20 +31,36 @@ code {
   width: 100px;
 }
 
-.piece {
+#piece {
   background: #CC7722;
   opacity: 0.5;
   filter: hue-rotate(90deg);
-  float: left;
-  font-size: 24px;
-  font-weight: bold;
-  line-height: 34px;
   height: 100px;
-  margin-right: -1px;
-  margin-top: -1px;
-  padding: 0;
-  text-align: center;
   width: 100px;
+}
+
+#promotion {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+}
+
+#promotion.body {
+  position: absolute;
+  top: calc(50% - 150px);
+  left: calc(50% - 400px);
+  display:flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 300px;
+  width: 1600px;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+#promotion.hidden {
+  display: none
 }
 
 

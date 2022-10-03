@@ -18,15 +18,15 @@ const Piece = (props) => {
     return(
         <Image
             key = {props.gameKey}
-            name = {props.name}
+            kind = {props.kind}
             draggable = {currentTurnTEMP}
             x={props.x}
             y={props.y}
             width = {isDragged ? 65 : 58}
             height = {isDragged ? 78 : 70}
             image={image}
-            offsetX = {29}
-            offsetY = {35}
+            offsetX = {isDragged ? 33 : 29}
+            offsetY = {isDragged ? 39 :35}
             rotation = {rotation}
             onDragStart = {props.onDragStart}
             onDragEnd = {props.onDragEnd}
