@@ -5,9 +5,8 @@ import PromotionImage from "./promotionImage.js";
 import ShogiGame from "../model/shogigame.js"
 import BoardPic from "../assets/brownboard.png"
 import imagemap from "./imagemap.js"
-import { Stage, Layer, Image, Rect } from "react-konva";
+import { Stage, Layer, Image, Rect, Text } from "react-konva";
 import { Color } from "shogi.js";
-import { RGBA } from "konva/lib/filters/RGBA.js";
 
 
 
@@ -21,10 +20,12 @@ class Game extends React.Component {
             draggedPieceTargetId: "",
             gameKey: 0,
             boardImage: new window.Image(),
+            hoverTarget: "",
             piecesDraggable: true,
             pieceUpForPromotion: "",
             pieceUpForPromotionLoc: "",
-            promotionScreenShow: false
+            promotionScreenShow: false,
+            winScreen: ""
         }
 
         this.state.boardImage.src = BoardPic;
@@ -62,7 +63,25 @@ class Game extends React.Component {
                 draggedPieceTargetId: ""
             })
             return
-        } else if (update === "handle promotion") {
+        }
+
+        if (currentGame.isInCheck(currentGame.getBoard(), !isMyMove)) {
+            if (currentGame.isCheckmate(!isMyMove)) {
+                this.setState({
+                    gameKey: this.state.gameKey === 1 ? 0 : 1,
+                    pieceUpForPromotion: "",
+                    pieceUpForPromotionLoc: "",
+                    piecesDraggable: false,
+                    promotionScreenShow: false,
+                    winScreen: isMyMove === this.props.thisPlayerIsBlack ? "Black" : "White"
+                })
+
+                return
+            }
+        }
+        
+        
+        if (update === "handle promotion") {
             let promotePiece = currentGame.findPieceKindOnBoard(selectedId)
             this.setState({
                 gameKey: this.state.gameKey === 1 ? 0 : 1,
@@ -80,12 +99,6 @@ class Game extends React.Component {
             draggedPieceTargetId: "",
             gameState: currentGame
         })
-
-        if (currentGame.isInCheck(currentGame.getBoard(), !isMyMove)) {
-            if (currentGame.isCheckmate(!isMyMove)) {
-                alert("checkmate")
-            }
-        }
 
         this.props.playAudio()
 
@@ -122,7 +135,6 @@ class Game extends React.Component {
 
     handleNoPromotion = () => {
         this.setState({
-            gameKey: this.state.gameKey === 1 ? 0 : 1,
             pieceUpForPromotion: "",
             pieceUpForPromotionLoc: "",
             piecesDraggable: true,
@@ -134,7 +146,6 @@ class Game extends React.Component {
     handlePromotion = () => {
         this.state.gameState.promotePiece(this.state.pieceUpForPromotionLoc)
         this.setState({
-            gameKey: this.state.gameKey === 1 ? 0 : 1,
             pieceUpForPromotion: "",
             pieceUpForPromotionLoc: "",
             piecesDraggable: true,
@@ -142,13 +153,38 @@ class Game extends React.Component {
             playersTurnIsBlack: !this.state.playersTurnIsBlack
         })
 
+        let currentGame = this.state.gameState
+        if (currentGame.isInCheck(currentGame.getBoard(), false)) {
+            if (currentGame.isCheckmate(false)) {
+                this.setState({
+                    pieceUpForPromotion: "",
+                    pieceUpForPromotionLoc: "",
+                    piecesDraggable: false,
+                    promotionScreenShow: false,
+                    winScreen: this.props.thisPlayerIsBlack ? "Black" : "White"
+                })
+            }
+        }
+
+    }
+
+    handleMouseEnter = (e) => {
+        this.setState({
+            hoverTarget: e.target.attrs.id
+        })
+    }
+
+    handleMouseLeave = () => {
+        this.setState({
+            hoverTarget: ""
+        })
     }
 
     
     render() {
         return(
             <div>
-                <Stage width={1366} height={768} position={"center"}>
+                <Stage width={1366} height={768}>
                     <Layer>
                         <Image image={this.state.boardImage} x={299} />
                         <Rect width={250} height={250} x={43} y={10} fill="#9c7b62"/>
@@ -224,22 +260,36 @@ class Game extends React.Component {
                             <div>
                                 <Rect width={1366} height={300} y={234} fill={"#000000AA"}/>
                                 <PromotionImage
+                                    id = {1}
                                     imgurls = {imagemap[this.state.pieceUpForPromotion]}
                                     gameKey = {this.state.gameKey}
                                     onClick = {this.handleNoPromotion}
+                                    onMouseEnter = {this.handleMouseEnter}
+                                    onMouseLeave = {this.handleMouseLeave}
+                                    hoverTarget = {this.state.hoverTarget}
                                     x={533}
                                     y={384}
                                 />
                                 <PromotionImage
+                                    id = {2}
                                     imgurls = {imagemap[promoteMap[this.state.pieceUpForPromotion]]}
                                     gameKey = {this.state.gameKey}
                                     onClick = {this.handlePromotion}
+                                    onMouseEnter = {this.handleMouseEnter}
+                                    onMouseLeave = {this.handleMouseLeave}
+                                    hoverTarget = {this.state.hoverTarget}
                                     x={833}
                                     y={384}
 
                                 />
                             </div> 
                             : ""
+                        }
+                        {(this.state.winScreen !== "") ?
+                            <div>
+                                <Rect width={1366} height={300} y={234} fill={"#000000AA"}/>
+                                <Text fill={"#fff"} verticalAlign="middle" align="center" width={1366} height={768} fontSize={100} text={this.state.winScreen + " Wins!"}/>
+                            </div> : ""
                         }
                     </Layer>
                 </Stage>

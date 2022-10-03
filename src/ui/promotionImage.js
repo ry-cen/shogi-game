@@ -9,16 +9,19 @@ const PromotionImage = (props) => {
 
     return(
         <Image
+            id = {props.id}
             key = {props.gameKey}
             kind = {props.kind}
-            x={props.x}
-            y={props.y}
-            offsetX={101}
-            offsetY={120}
-            width={202}
-            height={240}
-            image={image}
+            x = {props.x}
+            y = {props.y}
+            offsetX = {(props.id === props.hoverTarget) ? 111 : 101}
+            offsetY = {(props.id === props.hoverTarget) ? 132 : 120}
+            width = {(props.id === props.hoverTarget) ? 222 : 202}
+            height = {(props.id === props.hoverTarget) ? 264 : 240}
+            image = {image}
             onClick = {props.onClick}
+            onMouseEnter = {props.onMouseEnter}
+            onMouseLeave = {props.onMouseLeave}
         />
     )
 } 
