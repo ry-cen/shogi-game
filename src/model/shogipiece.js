@@ -49,7 +49,7 @@ class ShogiPiece {
 
     // Returns a clone of this piece with the same name, originalColor, color and id.
     clone() {
-        return new ShogiPiece(this.name, this.originalColor, this.color, this.id)
+        return new ShogiPiece(this.name, this.color, this.id, this.promoted)
     }
 }
 

@@ -40,7 +40,8 @@ class Game extends React.Component {
         const position = this.triangulate(e.target.x()+77, e.target.y()+77, currentBoard);
         const selectedId = this.state.draggedPieceTargetId;
         
-        this.movePiece(selectedId, position, currentGame, this.state.playersTurnIsBlack);
+        console.log(position)
+        this.movePiece(selectedId, position, currentGame, this.props.thisPlayerIsBlack === this.state.playersTurnIsBlack);
     }
 
     movePiece = (selectedId, position, currentGame, isMyMove, promote = false) => {
@@ -57,16 +58,17 @@ class Game extends React.Component {
                 draggedPieceTargetId: ""
             })
             return
-        } else if (update === "handle promotion") {
-            this.setState({
-                gameKey: this.state.gameKey === 1 ? 0 : 1,
-                draggedPieceTargetId: "",
-                pieceUpForPromotion: position,
-                gameState: currentGame
-            })
-            handlePromotion()
-            return
         }
+        // } else if (update === "handle promotion") {
+        //     this.setState({
+        //         gameKey: this.state.gameKey === 1 ? 0 : 1,
+        //         draggedPieceTargetId: "",
+        //         pieceUpForPromotion: position,
+        //         gameState: currentGame
+        //     })
+        //     //handlePromotion()
+        //     return
+        // }
 
         this.setState({
             draggedPieceTargetId: "",
@@ -159,6 +161,7 @@ class Game extends React.Component {
                                                     onDragStart = {this.startDragging}
                                                     onDragEnd = {this.endDragging}
                                                     draggedPieceTargetId = {this.state.draggedPieceTargetId}
+                                                    piecesDraggable = {this.state.piecesDraggable}
                                                     id = {square.getPieceId()}
                                                     thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
                                                     playersTurnIsBlack = {this.state.playersTurnIsBlack}
@@ -179,6 +182,7 @@ class Game extends React.Component {
                                                     onDragStart = {this.startDragging}
                                                     onDragEnd = {this.endDragging}
                                                     draggedPieceTargetId = {this.state.draggedPieceTargetId}
+                                                    piecesDraggable = {this.state.piecesDraggable}
                                                     id = {square.getPieceId()}
                                                     thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
                                                     playersTurnIsBlack = {this.state.playersTurnIsBlack}

@@ -17,12 +17,10 @@ class Square {
             return false;
         } else if (this.piece === null) {
             this.piece = newPiece;
-            this.piece.setSquare(this);
             return false;
         } else {
             var tempPiece = this.piece;
             this.piece = newPiece;
-            this.piece.setSquare(this);
             tempPiece.color = tempPiece.color === Color.Black ? Color.White : Color.Black;
             return tempPiece;
         }

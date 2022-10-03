@@ -9,7 +9,7 @@ function App() {
   return (
     <Game 
       playAudio = {play} 
-      thisPlayerIsBlack = {true}
+      thisPlayerIsBlack = {false}
     />
   );
 }
