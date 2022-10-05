@@ -8,7 +8,8 @@ import imagemap from "./imagemap.js"
 import { Stage, Layer, Image, Rect, Text } from "react-konva";
 import { Color } from "shogi.js";
 
-
+let boardImage = new window.Image();
+boardImage.src = BoardPic;
 
 class Game extends React.Component {
 
@@ -19,17 +20,29 @@ class Game extends React.Component {
             playersTurnIsBlack: true,
             draggedPieceTargetId: "",
             gameKey: 0,
-            boardImage: new window.Image(),
             hoverTarget: "",
             piecesDraggable: true,
             pieceUpForPromotion: "",
             pieceUpForPromotionLoc: "",
             promotionScreenShow: false,
-            winScreen: ""
+            winScreen: "",
+            width: window.innerWidth,
+            height: window.innerHeight,
         }
 
-        this.state.boardImage.src = BoardPic;
     }
+
+    componentDidMount() {
+        window.addEventListener('resize', this.updateDimensions);
+    }
+    
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.updateDimensions);
+    }
+
+    updateDimensions = () => {
+        this.setState({ width: window.innerWidth, height: window.innerHeight });
+    };
 
 
     startDragging = (e) => {
@@ -69,13 +82,14 @@ class Game extends React.Component {
             if (currentGame.isCheckmate(!isMyMove)) {
                 this.setState({
                     gameKey: this.state.gameKey === 1 ? 0 : 1,
+                    draggedPieceTargetId: "",
                     pieceUpForPromotion: "",
                     pieceUpForPromotionLoc: "",
                     piecesDraggable: false,
                     promotionScreenShow: false,
                     winScreen: isMyMove === this.props.thisPlayerIsBlack ? "Black" : "White"
                 })
-
+                this.props.playAudio()
                 return
             }
         }
@@ -92,6 +106,7 @@ class Game extends React.Component {
                 promotionScreenShow: true,
                 gameState: currentGame
             })
+            this.props.playAudio()
             return
         }
 
@@ -166,6 +181,8 @@ class Game extends React.Component {
             }
         }
 
+        this.props.playAudio()
+
     }
 
     handleMouseEnter = (e) => {
@@ -184,11 +201,12 @@ class Game extends React.Component {
     render() {
         return(
             <div>
-                <Stage width={1366} height={768}>
+                <Stage y={this.state.width*(0.025)} width={this.state.width} height={this.state.height} scaleX={this.state.height*(0.9)/768} scaleY={this.state.height*(0.9)/768}>
                     <Layer>
-                        <Image image={this.state.boardImage} x={299} />
+                        <Image image={boardImage} x={299} />
                         <Rect width={250} height={250} x={43} y={10} fill="#9c7b62"/>
                         <Rect width={250} height={250} x={1073} y={508} fill="#9c7b62"/>
+                        <Rect width={250} height={50} x={1073} y={508} fill="#9c7b62"/>
                         {this.state.gameState.getBoard().map((row) => {
                             return (<React.Fragment>
                                     {row.map((square) => {

@@ -16,6 +16,9 @@ code {
     monospace;
 }
 
+.root {
+  vertical-align: middle;
+}
 
 .square {
   background: #fff;
