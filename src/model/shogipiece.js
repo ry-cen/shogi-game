@@ -1,15 +1,8 @@
-
-const promotablePieces = [
-    "KY",
-    "KE",
-    "GI",
-    "KA",
-    "HI",
-    "FU",
-]
+import {promoteMap, unpromoteMap} from './promotions.js';
+import {Color} from 'shogi.js';
 
 class ShogiPiece {
-    /* names:
+    /* kinds:
         KY: Lance
         KE: Knight
         KA: Bishop
@@ -20,37 +13,39 @@ class ShogiPiece {
         GI: Silver
     */
     
-    constructor(name, originalColor, color, id, promoted = false) {
-        this.name = name;
-        this.originalColor = originalColor;
+    constructor(kind, color, id) {
+        this.kind = kind;
         this.color = color;
         this.id = id;
-        this.promotable = name in promotablePieces;
-        this.promoted = promoted
     }
 
-    // Sets the square that this piece resides on.
-    setSquare(newSquare) {
-        this.square = newSquare;
+    isPromotable() {
+        return this.kind in promoteMap;
     }
 
-
+    isPromoted() {
+        return (["TO", "NY", "NK", "NG", "UM", "RY"].indexOf(this.kind) >= 0);
+    }
     // TODO Promotes this piece if it is promotable.
     promote() {
-        if (this.promotable) {
-            this.promoted = true
+        if (this.isPromotable()) {
+            this.kind = promoteMap[this.kind];
         }
     }
 
-    // TODO Sends this piece to the hand that is given
-    toHand(hand) {
-        this.color = hand.color
-        this.square = hand
+    unpromote() {
+        if (this.isPromoted()) {
+            this.kind = unpromoteMap[this.kind];
+        }
     }
 
-    // Returns a clone of this piece with the same name, originalColor, color and id.
+    switchColor() {
+        this.color = this.color === Color.Black ? Color.White : Color.Black;
+    }
+
+    // Returns a clone of this piece with the same kind, color and id.
     clone() {
-        return new ShogiPiece(this.name, this.originalColor, this.color, this.id)
+        return new ShogiPiece(this.kind, this.color, this.id);
     }
 }
 

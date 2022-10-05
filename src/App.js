@@ -7,10 +7,12 @@ function App() {
   const [play] = useSound(move)
   
   return (
-    <Game 
-      playAudio = {play} 
-      thisPlayerIsBlack = {true}
-    />
+      <Game 
+        verticalAlign={"middle"}
+        playAudio = {play} 
+        thisPlayerIsBlack = {true}
+      />
+
   );
 }
 
