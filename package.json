@@ -13,6 +13,7 @@
     "react-konva": "^18.2.1",
     "react-scripts": "5.0.1",
     "shogi.js": "^2.0.5",
+    "socket.io-client": "^4.5.2",
     "use-image": "^1.0.12",
     "use-sound": "^4.0.1",
     "web-vitals": "^2.1.4"

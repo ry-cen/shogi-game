@@ -8,6 +8,8 @@ import imagemap from "./imagemap.js"
 import { Stage, Layer, Image, Rect, Text } from "react-konva";
 import { Color } from "shogi.js";
 
+const socket = require('../../connection/socket').socket
+
 let boardImage = new window.Image();
 boardImage.src = BoardPic;
 
@@ -34,6 +36,11 @@ class Game extends React.Component {
 
     componentDidMount() {
         window.addEventListener('resize', this.updateDimensions);
+        socket.on('opponent move', move => {
+            if (this.props.thisPlayerIsBlack === this.state.playersTurnIsBlack) { 
+                this.movePiece(move.selectedId)
+            }
+        })
     }
     
     componentWillUnmount() {
@@ -77,50 +84,51 @@ class Game extends React.Component {
             })
             return
         }
-
-        if (currentGame.isInCheck(currentGame.getBoard(), !isMyMove)) {
-            if (currentGame.isCheckmate(!isMyMove)) {
-                this.setState({
-                    gameKey: this.state.gameKey === 1 ? 0 : 1,
-                    draggedPieceTargetId: "",
-                    pieceUpForPromotion: "",
-                    pieceUpForPromotionLoc: "",
-                    piecesDraggable: false,
-                    promotionScreenShow: false,
-                    winScreen: isMyMove === this.props.thisPlayerIsBlack ? "Black" : "White"
-                })
-                this.props.playAudio()
-                return
-            }
-        }
         
-        
-        if (update === "handle promotion") {
-            let promotePiece = currentGame.findPieceKindOnBoard(selectedId)
-            this.setState({
-                gameKey: this.state.gameKey === 1 ? 0 : 1,
-                draggedPieceTargetId: "",
-                pieceUpForPromotion: promotePiece,
-                pieceUpForPromotionLoc: position,
-                piecesDraggable: false,
-                promotionScreenShow: true,
-                gameState: currentGame
-            })
-            this.props.playAudio()
-            return
-        }
+        this.props.playAudio()
 
         this.setState({
             draggedPieceTargetId: "",
             gameState: currentGame
         })
 
-        this.props.playAudio()
+        if (isMyMove) {
+            socket
+        }
+
+        
+        if (update === "checkmate") {
+            this.checkmate(isMyMove)
+            return
+
+        } else if (update === "handle promotion") {
+            let promotePiece = currentGame.findPieceKindOnBoard(selectedId)
+            this.setState({
+                gameKey: this.state.gameKey === 1 ? 0 : 1,
+                pieceUpForPromotion: promotePiece,
+                pieceUpForPromotionLoc: position,
+                piecesDraggable: false,
+                promotionScreenShow: true
+            })
+            return
+
+        }
+
 
         this.setState({
             playersTurnIsBlack: !this.state.playersTurnIsBlack
         })
 
+    }
+
+    checkmate = (isMyMove) => {
+        this.setState({
+            pieceUpForPromotion: "",
+            pieceUpForPromotionLoc: "",
+            piecesDraggable: false,
+            promotionScreenShow: false,
+            winScreen: isMyMove === this.props.thisPlayerIsBlack ? "Black" : "White"
+        })
     }
 
 
@@ -159,7 +167,7 @@ class Game extends React.Component {
     }
 
     handlePromotion = () => {
-        this.state.gameState.promotePiece(this.state.pieceUpForPromotionLoc)
+        const promoteStatus = this.state.gameState.promotePiece(this.state.pieceUpForPromotionLoc)
         this.setState({
             pieceUpForPromotion: "",
             pieceUpForPromotionLoc: "",
@@ -168,20 +176,12 @@ class Game extends React.Component {
             playersTurnIsBlack: !this.state.playersTurnIsBlack
         })
 
-        let currentGame = this.state.gameState
-        if (currentGame.isInCheck(currentGame.getBoard(), false)) {
-            if (currentGame.isCheckmate(false)) {
-                this.setState({
-                    pieceUpForPromotion: "",
-                    pieceUpForPromotionLoc: "",
-                    piecesDraggable: false,
-                    promotionScreenShow: false,
-                    winScreen: this.props.thisPlayerIsBlack ? "Black" : "White"
-                })
-            }
+        this.props.playAudio()
+
+        if (promoteStatus === "checkmate") {
+            this.checkmate(true)
         }
 
-        this.props.playAudio()
 
     }
 
