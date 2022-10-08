@@ -7,8 +7,7 @@ const Piece = (props) => {
     const color = props.isBlack ? 0 : 1;
     const [image] = useImage(props.imgurls[color]);
     const ownsPiece = props.thisPlayersColorBlack === props.isBlack;
-    const playersTurn = props.thisPlayersColorBlack === props.playersTurnIsBlack;
-    const currentTurnTEMP = (props.isBlack === props.playersTurnIsBlack) && props.piecesDraggable;
+    const playersTurn = props.thisPlayersColorBlack === props.playersTurnIsBlack && ownsPiece;
 
     const isDragged = props.draggedPieceTargetId === props.id
 
@@ -19,7 +18,7 @@ const Piece = (props) => {
         <Image
             key = {props.gameKey}
             kind = {props.kind}
-            draggable = {currentTurnTEMP}
+            draggable = {playersTurn}
             x={props.x}
             y={props.y}
             width = {isDragged ? 65 : 58}

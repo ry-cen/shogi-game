@@ -8,7 +8,7 @@ import imagemap from "./imagemap.js"
 import { Stage, Layer, Image, Rect, Text } from "react-konva";
 import { Color } from "shogi.js";
 
-const socket = require('../../connection/socket').socket
+const socket = require('../connection/socket').socket
 
 let boardImage = new window.Image();
 boardImage.src = BoardPic;
@@ -25,6 +25,7 @@ class Game extends React.Component {
             hoverTarget: "",
             piecesDraggable: true,
             pieceUpForPromotion: "",
+            pieceUpForPromotionID: "",
             pieceUpForPromotionLoc: "",
             promotionScreenShow: false,
             winScreen: "",
@@ -36,10 +37,12 @@ class Game extends React.Component {
 
     componentDidMount() {
         window.addEventListener('resize', this.updateDimensions);
+        this.setState({
+            gameState: new ShogiGame(this.props.thisPlayerIsBlack)
+        })
         socket.on('opponent move', move => {
-            if (this.props.thisPlayerIsBlack === this.state.playersTurnIsBlack) { 
-                this.movePiece(move.selectedId)
-            }
+            console.log(move)
+            this.movePiece(move.selectedId, move.position, this.state.gameState, false, move.promote)
         })
     }
     
@@ -92,8 +95,12 @@ class Game extends React.Component {
             gameState: currentGame
         })
 
-        if (isMyMove) {
-            socket
+        if (isMyMove && update !== "handle promotion") {
+            socket.emit('move', {
+                selectedId: selectedId,
+                position: position,
+                promote: false
+            })
         }
 
         
@@ -106,6 +113,7 @@ class Game extends React.Component {
             this.setState({
                 gameKey: this.state.gameKey === 1 ? 0 : 1,
                 pieceUpForPromotion: promotePiece,
+                pieceUpForPromotionID: selectedId,
                 pieceUpForPromotionLoc: position,
                 piecesDraggable: false,
                 promotionScreenShow: true
@@ -113,6 +121,8 @@ class Game extends React.Component {
             return
 
         }
+
+        
 
 
         this.setState({
@@ -157,19 +167,36 @@ class Game extends React.Component {
     }
 
     handleNoPromotion = () => {
+
+        socket.emit('move', {
+            selectedId: this.state.pieceUpForPromotionID,
+            position: this.reversePosition(this.state.pieceUpForPromotionLoc),
+            promote: false
+        })
+
         this.setState({
             pieceUpForPromotion: "",
+            pieceUpForPromotionID: "",
             pieceUpForPromotionLoc: "",
             piecesDraggable: true,
             promotionScreenShow: false,
             playersTurnIsBlack: !this.state.playersTurnIsBlack
         })
+        
     }
 
     handlePromotion = () => {
         const promoteStatus = this.state.gameState.promotePiece(this.state.pieceUpForPromotionLoc)
+
+        socket.emit('move', {
+            selectedId: this.state.pieceUpForPromotionID,
+            position: this.reversePosition(this.state.pieceUpForPromotionLoc),
+            promote: true
+        })
+
         this.setState({
             pieceUpForPromotion: "",
+            pieceUpForPromotionID: "",
             pieceUpForPromotionLoc: "",
             piecesDraggable: true,
             promotionScreenShow: false,
@@ -177,6 +204,8 @@ class Game extends React.Component {
         })
 
         this.props.playAudio()
+
+        
 
         if (promoteStatus === "checkmate") {
             this.checkmate(true)
@@ -197,6 +226,13 @@ class Game extends React.Component {
         })
     }
 
+    reversePosition = (position) => {
+        if (this.props.thisPlayerIsBlack) {
+            return [8-position[0], 8-position[1]]
+        } else {
+            return position
+        }
+    }
     
     render() {
         return(
@@ -224,7 +260,7 @@ class Game extends React.Component {
                                                     draggedPieceTargetId = {this.state.draggedPieceTargetId}
                                                     piecesDraggable = {this.state.piecesDraggable}
                                                     id = {square.getPieceId()}
-                                                    thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
+                                                    thisPlayersColorBlack = {this.props.thisPlayerIsBlack}
                                                     playersTurnIsBlack = {this.state.playersTurnIsBlack}
                                                 />)
                                         }
@@ -247,7 +283,7 @@ class Game extends React.Component {
                                                     draggedPieceTargetId = {this.state.draggedPieceTargetId}
                                                     piecesDraggable = {this.state.piecesDraggable}
                                                     id = {square.getPieceId()}
-                                                    thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
+                                                    thisPlayersColorBlack = {this.props.thisPlayerIsBlack}
                                                     playersTurnIsBlack = {this.state.playersTurnIsBlack}
                                                 />)
                                         }
@@ -268,7 +304,7 @@ class Game extends React.Component {
                                                     draggedPieceTargetId = {this.state.draggedPieceTargetId}
                                                     piecesDraggable = {this.state.piecesDraggable}
                                                     id = {square.getPieceId()}
-                                                    thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
+                                                    thisPlayersColorBlack = {this.props.thisPlayerIsBlack}
                                                     playersTurnIsBlack = {this.state.playersTurnIsBlack}
                                                 />)
                                         }
