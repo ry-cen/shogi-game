@@ -40,6 +40,16 @@ class Game extends React.Component {
     componentDidMount() {
         window.addEventListener('resize', this.updateDimensions);
 
+        socket.on("opponent disconnect", () => {
+            this.setState({
+                pieceUpForPromotion: "",
+                pieceUpForPromotionLoc: "",
+                piecesDraggable: false,
+                promotionScreenShow: false,
+                winScreen: this.props.username
+            })
+        })
+
         socket.on("opponent username", (data) => {
             console.log(data)
             this.setState({
@@ -49,7 +59,7 @@ class Game extends React.Component {
         })
 
         socket.emit("request username", {
-                color: (this.props.thisPlayerIsBlack ? 0 : 1),
+                color: (this.props.thisPlayerIsBlack ? '0' : '1'),
                 gameId: this.props.gameId.gameid
         })
 
@@ -254,8 +264,8 @@ class Game extends React.Component {
                         <Image image={boardImage} x={299} />
                         <Rect width={250} height={250} x={43} y={10} fill="#9c7b62"/>
                         <Rect width={250} height={250} x={1073} y={508} fill="#9c7b62"/>
-                        <Text fill={"#fff"} verticalAlign="middle" align="center" width={250} height={100} fontSize={50} x={1073} y={334} text={this.props.username}/>
-                        <Text fill={"#fff"} verticalAlign="middle" align="center" width={250} height={100} fontSize={50} x={43} y={334} text={this.state.opponentUsername}/>
+                        <Text fill={"#fff"} verticalAlign="middle" align="center" width={250} height={100} fontSize={35} x={1073} y={334} text={this.props.username}/>
+                        <Text fill={"#fff"} verticalAlign="middle" align="center" width={250} height={100} fontSize={35} x={43} y={334} text={this.state.opponentUsername}/>
                         {this.state.gameState.getBoard().map((row) => {
                             return (<React.Fragment>
                                     {row.map((square) => {

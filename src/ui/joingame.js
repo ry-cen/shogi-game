@@ -19,6 +19,20 @@ class JoinGame extends React.Component {
     }
 
     componentDidMount = () => {
+        const gameId = this.props.gameId.gameid;
+
+        socket.on("joined", () => {
+            socket.emit("send username", {
+                username: this.state.textInput, 
+                color: (this.props.didRedirect ? '1' : '0'),
+                gameId: gameId
+            })
+
+            this.setState({
+                gotUsername: true
+            })
+        })
+
         socket.on("both players ready", () => {
             this.setState({
                 bothPlayersReady: true
@@ -37,14 +51,9 @@ class JoinGame extends React.Component {
     }
 
     join = () => {
-
         const gameId = this.props.gameId.gameid;
+        
         socket.emit('joinGame', gameId)
-        socket.emit("send username", {
-            username: this.state.textInput, 
-            color: (this.props.didRedirect ? 1 : 0),
-            gameId: gameId
-        })
 
     }
 
@@ -61,7 +70,7 @@ class JoinGame extends React.Component {
         console.log(this.state.bothPlayersReady);
         return (
             this.state.doesNotExist ?
-                <Navigate to='/' />
+                <h1 style={{ textAlign: "center", color: "rgb(255,255,255)", marginTop: String((window.innerHeight / 2)) + "px" }}>Game does not exist.</h1>
                 :
                 <React.Fragment>
                     {
@@ -83,11 +92,9 @@ class JoinGame extends React.Component {
                                     style={{ marginLeft: String((window.innerWidth / 2) - 60) + "px", width: "120px", marginTop: "62px" }}
                                     disabled={!(this.state.textInput.length > 0)}
                                     onClick={() => {
-                                        this.setState({
-                                            gotUsername: true
-                                        })
-
                                         this.join()
+                                        
+                                        
                                     }}>Submit</button>
                             </div>
                     }
