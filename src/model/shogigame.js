@@ -357,6 +357,12 @@ class ShogiGame {
 
             this.setBoard(currentBoard);
 
+            if (this.isInCheck(this.board, !isMyMove)) {
+                if(this.isCheckmate(!isMyMove)) {
+                    return "checkmate"
+                }
+            }
+
             return "needs update"
         }
     }
