@@ -5,7 +5,8 @@ import PromotionImage from "./promotionImage.js";
 import ShogiGame from "../model/shogigame.js"
 import BoardPic from "../assets/brownboard.png"
 import imagemap from "./imagemap.js"
-import { Stage, Layer, Image, Rect, Text } from "react-konva";
+
+import { Stage, Layer, Image, Rect, Text, Group } from "react-konva";
 import { Color } from "shogi.js";
 
 const socket = require('../connection/socket').socket
@@ -23,7 +24,7 @@ class Game extends React.Component {
             draggedPieceTargetId: "",
             gameKey: 0,
             hoverTarget: "",
-            piecesDraggable: true,
+            piecesDraggable: false,
             pieceUpForPromotion: "",
             pieceUpForPromotionID: "",
             pieceUpForPromotionLoc: "",
@@ -31,15 +32,31 @@ class Game extends React.Component {
             winScreen: "",
             width: window.innerWidth,
             height: window.innerHeight,
+            opponentUsername: ""
         }
 
     }
 
     componentDidMount() {
         window.addEventListener('resize', this.updateDimensions);
+
+        socket.on("opponent username", (data) => {
+            console.log(data)
+            this.setState({
+                opponentUsername: data.username,
+                piecesDraggable: true
+            })
+        })
+
+        socket.emit("request username", {
+                color: (this.props.thisPlayerIsBlack ? 0 : 1),
+                gameId: this.props.gameId.gameid
+        })
+
         this.setState({
             gameState: new ShogiGame(this.props.thisPlayerIsBlack)
         })
+
         socket.on('opponent move', move => {
             console.log(move)
             this.movePiece(move.selectedId, move.position, this.state.gameState, false, move.promote)
@@ -99,7 +116,8 @@ class Game extends React.Component {
             socket.emit('move', {
                 selectedId: selectedId,
                 position: position,
-                promote: false
+                promote: false,
+                gameId: this.props.gameId.gameid
             })
         }
 
@@ -137,7 +155,7 @@ class Game extends React.Component {
             pieceUpForPromotionLoc: "",
             piecesDraggable: false,
             promotionScreenShow: false,
-            winScreen: isMyMove === this.props.thisPlayerIsBlack ? "Black" : "White"
+            winScreen: isMyMove ? this.props.username : this.state.opponentUsername
         })
     }
 
@@ -170,8 +188,9 @@ class Game extends React.Component {
 
         socket.emit('move', {
             selectedId: this.state.pieceUpForPromotionID,
-            position: this.reversePosition(this.state.pieceUpForPromotionLoc),
-            promote: false
+            position: this.state.pieceUpForPromotionLoc,
+            promote: false,
+            gameId: this.props.gameId.gameid
         })
 
         this.setState({
@@ -190,8 +209,9 @@ class Game extends React.Component {
 
         socket.emit('move', {
             selectedId: this.state.pieceUpForPromotionID,
-            position: this.reversePosition(this.state.pieceUpForPromotionLoc),
-            promote: true
+            position: this.state.pieceUpForPromotionLoc,
+            promote: true,
+            gameId: this.props.gameId.gameid
         })
 
         this.setState({
@@ -225,24 +245,17 @@ class Game extends React.Component {
             hoverTarget: ""
         })
     }
-
-    reversePosition = (position) => {
-        if (this.props.thisPlayerIsBlack) {
-            return [8-position[0], 8-position[1]]
-        } else {
-            return position
-        }
-    }
     
     render() {
         return(
-            <div>
+            <React.Fragment>
                 <Stage y={this.state.width*(0.025)} width={this.state.width} height={this.state.height} scaleX={this.state.height*(0.9)/768} scaleY={this.state.height*(0.9)/768}>
                     <Layer>
                         <Image image={boardImage} x={299} />
                         <Rect width={250} height={250} x={43} y={10} fill="#9c7b62"/>
                         <Rect width={250} height={250} x={1073} y={508} fill="#9c7b62"/>
-                        <Rect width={250} height={50} x={1073} y={508} fill="#9c7b62"/>
+                        <Text fill={"#fff"} verticalAlign="middle" align="center" width={250} height={100} fontSize={50} x={1073} y={334} text={this.props.username}/>
+                        <Text fill={"#fff"} verticalAlign="middle" align="center" width={250} height={100} fontSize={50} x={43} y={334} text={this.state.opponentUsername}/>
                         {this.state.gameState.getBoard().map((row) => {
                             return (<React.Fragment>
                                     {row.map((square) => {
@@ -311,10 +324,10 @@ class Game extends React.Component {
                                         return
                         })}
                         {(this.state.promotionScreenShow) ?
-                            <div>
+                            <Group>
                                 <Rect width={1366} height={300} y={234} fill={"#000000AA"}/>
                                 <PromotionImage
-                                    id = {1}
+                                    id = {"left"}
                                     imgurls = {imagemap[this.state.pieceUpForPromotion]}
                                     gameKey = {this.state.gameKey}
                                     onClick = {this.handleNoPromotion}
@@ -325,7 +338,7 @@ class Game extends React.Component {
                                     y={384}
                                 />
                                 <PromotionImage
-                                    id = {2}
+                                    id = {"right"}
                                     imgurls = {imagemap[promoteMap[this.state.pieceUpForPromotion]]}
                                     gameKey = {this.state.gameKey}
                                     onClick = {this.handlePromotion}
@@ -336,7 +349,7 @@ class Game extends React.Component {
                                     y={384}
 
                                 />
-                            </div> 
+                            </Group> 
                             : ""
                         }
                         {(this.state.winScreen !== "") ?
@@ -347,7 +360,7 @@ class Game extends React.Component {
                         }
                     </Layer>
                 </Stage>
-            </div>
+            </React.Fragment>
         )
     }
 }

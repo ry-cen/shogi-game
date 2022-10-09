@@ -1,40 +1,45 @@
 import './App.css';
 import useSound from 'use-sound';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import move from './assets/move.mp3'
-import Wrapper from './connection/wrapper.js';
+import Game from './ui/game';
+import CreateGame from './ui/creategame';
+import JoinGameWrapper from './ui/joingamewrapper';
+import React from 'react';
 
-const socket = require('./connection/socket').socket
-
-socket.emit('join', socket.id)
-
-var thisPlayerSide = true;
-
-socket.on('side', side => {
-  socket.off('side')
-  thisPlayerSide = side;
-  console.log(thisPlayerSide)
-
-})
 
 
 function App() {
-  const [play] = useSound(move)
+    const [play] = useSound(move)
 
+    const [didRedirect, setDidRedirect] = React.useState(false)
 
-  if (thisPlayerSide !== null) {
+    const playerDidRedirect = React.useCallback(() => {
+        setDidRedirect(true)
+    }, [])
+
+    const playerDidNotRedirect = React.useCallback(() => {
+        setDidRedirect(false)
+    }, [])
+
+    const [username, setUsername] = React.useState('')
+
     return (
-      <Wrapper 
-        playAudio = {play}
-        thisPlayerIsBlack = {thisPlayerSide}
-      />
-  
-    );
-  }
-  
+        <Router>
+            <Routes>
+                <Route path='/' element={<CreateGame
+                    playerDidRedirect={playerDidRedirect}
+                    playerDidNotRedirect={playerDidNotRedirect}
+                />} exact />
+                <Route path="/game/:gameid" element={<JoinGameWrapper didRedirect={didRedirect} playAudio={play}/>}exact />
+            </Routes>
+        </Router>
+    )
 
-  
-  
-  
+
+
+
+
 }
 
 export default App;
