@@ -5,8 +5,11 @@ import PromotionImage from "./promotionImage.js";
 import ShogiGame from "../model/shogigame.js"
 import BoardPic from "../assets/brownboard.png"
 import imagemap from "./imagemap.js"
-import { Stage, Layer, Image, Rect, Text } from "react-konva";
+
+import { Stage, Layer, Image, Rect, Text, Group } from "react-konva";
 import { Color } from "shogi.js";
+
+const socket = require('../connection/socket').socket
 
 let boardImage = new window.Image();
 boardImage.src = BoardPic;
@@ -21,19 +24,53 @@ class Game extends React.Component {
             draggedPieceTargetId: "",
             gameKey: 0,
             hoverTarget: "",
-            piecesDraggable: true,
+            piecesDraggable: false,
             pieceUpForPromotion: "",
+            pieceUpForPromotionID: "",
             pieceUpForPromotionLoc: "",
             promotionScreenShow: false,
             winScreen: "",
             width: window.innerWidth,
             height: window.innerHeight,
+            opponentUsername: ""
         }
 
     }
 
     componentDidMount() {
         window.addEventListener('resize', this.updateDimensions);
+
+        socket.on("opponent disconnect", () => {
+            this.setState({
+                pieceUpForPromotion: "",
+                pieceUpForPromotionLoc: "",
+                piecesDraggable: false,
+                promotionScreenShow: false,
+                winScreen: this.props.username
+            })
+        })
+
+        socket.on("opponent username", (data) => {
+            console.log(data)
+            this.setState({
+                opponentUsername: data.username,
+                piecesDraggable: true
+            })
+        })
+
+        socket.emit("request username", {
+                color: (this.props.thisPlayerIsBlack ? '0' : '1'),
+                gameId: this.props.gameId.gameid
+        })
+
+        this.setState({
+            gameState: new ShogiGame(this.props.thisPlayerIsBlack)
+        })
+
+        socket.on('opponent move', move => {
+            console.log(move)
+            this.movePiece(move.selectedId, move.position, this.state.gameState, false, move.promote)
+        })
     }
     
     componentWillUnmount() {
@@ -77,50 +114,59 @@ class Game extends React.Component {
             })
             return
         }
-
-        if (currentGame.isInCheck(currentGame.getBoard(), !isMyMove)) {
-            if (currentGame.isCheckmate(!isMyMove)) {
-                this.setState({
-                    gameKey: this.state.gameKey === 1 ? 0 : 1,
-                    draggedPieceTargetId: "",
-                    pieceUpForPromotion: "",
-                    pieceUpForPromotionLoc: "",
-                    piecesDraggable: false,
-                    promotionScreenShow: false,
-                    winScreen: isMyMove === this.props.thisPlayerIsBlack ? "Black" : "White"
-                })
-                this.props.playAudio()
-                return
-            }
-        }
         
-        
-        if (update === "handle promotion") {
-            let promotePiece = currentGame.findPieceKindOnBoard(selectedId)
-            this.setState({
-                gameKey: this.state.gameKey === 1 ? 0 : 1,
-                draggedPieceTargetId: "",
-                pieceUpForPromotion: promotePiece,
-                pieceUpForPromotionLoc: position,
-                piecesDraggable: false,
-                promotionScreenShow: true,
-                gameState: currentGame
-            })
-            this.props.playAudio()
-            return
-        }
+        this.props.playAudio()
 
         this.setState({
             draggedPieceTargetId: "",
             gameState: currentGame
         })
 
-        this.props.playAudio()
+        if (isMyMove && update !== "handle promotion") {
+            socket.emit('move', {
+                selectedId: selectedId,
+                position: position,
+                promote: false,
+                gameId: this.props.gameId.gameid
+            })
+        }
+
+        
+        if (update === "checkmate") {
+            this.checkmate(isMyMove)
+            return
+
+        } else if (update === "handle promotion") {
+            let promotePiece = currentGame.findPieceKindOnBoard(selectedId)
+            this.setState({
+                gameKey: this.state.gameKey === 1 ? 0 : 1,
+                pieceUpForPromotion: promotePiece,
+                pieceUpForPromotionID: selectedId,
+                pieceUpForPromotionLoc: position,
+                piecesDraggable: false,
+                promotionScreenShow: true
+            })
+            return
+
+        }
+
+        
+
 
         this.setState({
             playersTurnIsBlack: !this.state.playersTurnIsBlack
         })
 
+    }
+
+    checkmate = (isMyMove) => {
+        this.setState({
+            pieceUpForPromotion: "",
+            pieceUpForPromotionLoc: "",
+            piecesDraggable: false,
+            promotionScreenShow: false,
+            winScreen: isMyMove ? this.props.username : this.state.opponentUsername
+        })
     }
 
 
@@ -149,39 +195,52 @@ class Game extends React.Component {
     }
 
     handleNoPromotion = () => {
+
+        socket.emit('move', {
+            selectedId: this.state.pieceUpForPromotionID,
+            position: this.state.pieceUpForPromotionLoc,
+            promote: false,
+            gameId: this.props.gameId.gameid
+        })
+
         this.setState({
             pieceUpForPromotion: "",
+            pieceUpForPromotionID: "",
             pieceUpForPromotionLoc: "",
             piecesDraggable: true,
             promotionScreenShow: false,
             playersTurnIsBlack: !this.state.playersTurnIsBlack
         })
+        
     }
 
     handlePromotion = () => {
-        this.state.gameState.promotePiece(this.state.pieceUpForPromotionLoc)
+        const promoteStatus = this.state.gameState.promotePiece(this.state.pieceUpForPromotionLoc)
+
+        socket.emit('move', {
+            selectedId: this.state.pieceUpForPromotionID,
+            position: this.state.pieceUpForPromotionLoc,
+            promote: true,
+            gameId: this.props.gameId.gameid
+        })
+
         this.setState({
             pieceUpForPromotion: "",
+            pieceUpForPromotionID: "",
             pieceUpForPromotionLoc: "",
             piecesDraggable: true,
             promotionScreenShow: false,
             playersTurnIsBlack: !this.state.playersTurnIsBlack
         })
 
-        let currentGame = this.state.gameState
-        if (currentGame.isInCheck(currentGame.getBoard(), false)) {
-            if (currentGame.isCheckmate(false)) {
-                this.setState({
-                    pieceUpForPromotion: "",
-                    pieceUpForPromotionLoc: "",
-                    piecesDraggable: false,
-                    promotionScreenShow: false,
-                    winScreen: this.props.thisPlayerIsBlack ? "Black" : "White"
-                })
-            }
+        this.props.playAudio()
+
+        
+
+        if (promoteStatus === "checkmate") {
+            this.checkmate(true)
         }
 
-        this.props.playAudio()
 
     }
 
@@ -196,17 +255,17 @@ class Game extends React.Component {
             hoverTarget: ""
         })
     }
-
     
     render() {
         return(
-            <div>
+            <React.Fragment>
                 <Stage y={this.state.width*(0.025)} width={this.state.width} height={this.state.height} scaleX={this.state.height*(0.9)/768} scaleY={this.state.height*(0.9)/768}>
                     <Layer>
                         <Image image={boardImage} x={299} />
                         <Rect width={250} height={250} x={43} y={10} fill="#9c7b62"/>
                         <Rect width={250} height={250} x={1073} y={508} fill="#9c7b62"/>
-                        <Rect width={250} height={50} x={1073} y={508} fill="#9c7b62"/>
+                        <Text fill={"#fff"} verticalAlign="middle" align="center" width={250} height={100} fontSize={35} x={1073} y={334} text={this.props.username}/>
+                        <Text fill={"#fff"} verticalAlign="middle" align="center" width={250} height={100} fontSize={35} x={43} y={334} text={this.state.opponentUsername}/>
                         {this.state.gameState.getBoard().map((row) => {
                             return (<React.Fragment>
                                     {row.map((square) => {
@@ -224,7 +283,7 @@ class Game extends React.Component {
                                                     draggedPieceTargetId = {this.state.draggedPieceTargetId}
                                                     piecesDraggable = {this.state.piecesDraggable}
                                                     id = {square.getPieceId()}
-                                                    thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
+                                                    thisPlayersColorBlack = {this.props.thisPlayerIsBlack}
                                                     playersTurnIsBlack = {this.state.playersTurnIsBlack}
                                                 />)
                                         }
@@ -247,7 +306,7 @@ class Game extends React.Component {
                                                     draggedPieceTargetId = {this.state.draggedPieceTargetId}
                                                     piecesDraggable = {this.state.piecesDraggable}
                                                     id = {square.getPieceId()}
-                                                    thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
+                                                    thisPlayersColorBlack = {this.props.thisPlayerIsBlack}
                                                     playersTurnIsBlack = {this.state.playersTurnIsBlack}
                                                 />)
                                         }
@@ -268,17 +327,17 @@ class Game extends React.Component {
                                                     draggedPieceTargetId = {this.state.draggedPieceTargetId}
                                                     piecesDraggable = {this.state.piecesDraggable}
                                                     id = {square.getPieceId()}
-                                                    thisPlayersColorBlack = {this.state.gameState.thisPlayerIsBlack}
+                                                    thisPlayersColorBlack = {this.props.thisPlayerIsBlack}
                                                     playersTurnIsBlack = {this.state.playersTurnIsBlack}
                                                 />)
                                         }
                                         return
                         })}
                         {(this.state.promotionScreenShow) ?
-                            <div>
+                            <Group>
                                 <Rect width={1366} height={300} y={234} fill={"#000000AA"}/>
                                 <PromotionImage
-                                    id = {1}
+                                    id = {"left"}
                                     imgurls = {imagemap[this.state.pieceUpForPromotion]}
                                     gameKey = {this.state.gameKey}
                                     onClick = {this.handleNoPromotion}
@@ -289,7 +348,7 @@ class Game extends React.Component {
                                     y={384}
                                 />
                                 <PromotionImage
-                                    id = {2}
+                                    id = {"right"}
                                     imgurls = {imagemap[promoteMap[this.state.pieceUpForPromotion]]}
                                     gameKey = {this.state.gameKey}
                                     onClick = {this.handlePromotion}
@@ -300,7 +359,7 @@ class Game extends React.Component {
                                     y={384}
 
                                 />
-                            </div> 
+                            </Group> 
                             : ""
                         }
                         {(this.state.winScreen !== "") ?
@@ -311,7 +370,7 @@ class Game extends React.Component {
                         }
                     </Layer>
                 </Stage>
-            </div>
+            </React.Fragment>
         )
     }
 }

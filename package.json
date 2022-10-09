@@ -11,10 +11,13 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-konva": "^18.2.1",
+    "react-router-dom": "^6.4.2",
     "react-scripts": "5.0.1",
     "shogi.js": "^2.0.5",
+    "socket.io-client": "^4.5.2",
     "use-image": "^1.0.12",
     "use-sound": "^4.0.1",
+    "uuid": "^9.0.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -40,5 +43,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "proxy": "http://localhost:8000"
 }

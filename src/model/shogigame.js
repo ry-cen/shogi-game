@@ -289,6 +289,12 @@ class ShogiGame {
 
         this.setBoard(currentBoard)
 
+        if (this.isInCheck(this.board, !isMyMove)) {
+            if(this.isCheckmate(!isMyMove)) {
+                return "checkmate"
+            }
+        }
+
         if (this.isPromoteRank(ogPiece.color, to_y, y) && ogPiece.isPromotable() && isMyMove && !promote) {
             return "handle promotion"
         }
@@ -296,9 +302,14 @@ class ShogiGame {
 
     // Promotes a piece on the board and game engine at a location.
     promotePiece(pieceLoc) {
-        console.log(pieceLoc)
         this.board[pieceLoc[1]][pieceLoc[0]].getPiece().promote()
         this.game.board[pieceLoc[0]][pieceLoc[1]].promote()
+
+        if (this.isInCheck(this.board, false)) {
+            if(this.isCheckmate(false)) {
+                return "checkmate"
+            }
+        }
     }
     
     dropPiece(pieceId, to, isMyMove, currentBoard) {
