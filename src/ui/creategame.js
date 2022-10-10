@@ -4,6 +4,9 @@ import { v4 as uuid } from "uuid";
 
 const socket = require('../connection/socket').socket
 
+/**
+ * Component that redirects to a new game id url and creates the game on the server.
+ */
 class CreateGame extends React.Component {
     state = {
         textInput: "",
@@ -19,6 +22,9 @@ class CreateGame extends React.Component {
 
     }
 
+    /**
+     * When the component mounts it creates a new uuid and updates the redirect state.
+     */
     componentDidMount = () => {
 
         const newId = uuid();
@@ -32,6 +38,9 @@ class CreateGame extends React.Component {
 
     }
 
+    /**
+     * Redirects the url to the game id.
+     */
     render() {
 
         return (

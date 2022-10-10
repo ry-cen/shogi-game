@@ -1,8 +1,11 @@
 import React from "react";
 import { socket } from "../connection/socket";
-import { Navigate } from "react-router-dom";
 import Game from "./game";
 
+
+/**
+ * Handles joining a game on a game id url.
+ */
 class JoinGame extends React.Component {
     state = {
         textInput: "",
@@ -18,6 +21,10 @@ class JoinGame extends React.Component {
 
     }
 
+    /**
+     * Opens sockets for joined, both players ready and if a game does not exist.
+     * If a game is successfully joined it sends the username to the server.
+     */
     componentDidMount = () => {
         const gameId = this.props.gameId.gameid;
 
@@ -50,6 +57,9 @@ class JoinGame extends React.Component {
         
     }
 
+    /**
+     * Sends the server the join game message with the game id to join this socket to the room.
+     */
     join = () => {
         const gameId = this.props.gameId.gameid;
         
@@ -57,6 +67,9 @@ class JoinGame extends React.Component {
 
     }
 
+    /**
+     * Handles text box typing.
+     */
     typingUserName = () => {
         const typedText = this.textBox.current.value
 
@@ -65,6 +78,11 @@ class JoinGame extends React.Component {
         })
     }
 
+
+    /**
+     * If game does not exist it displays that the game does not exist.
+     * 
+     */
     render() {
 
         console.log(this.state.bothPlayersReady);
@@ -78,18 +96,22 @@ class JoinGame extends React.Component {
                             this.state.bothPlayersReady ?
                                 <Game username={this.state.textInput} thisPlayerIsBlack={this.props.didRedirect} playAudio={this.props.playAudio} gameId={this.props.gameId} />
                                 :
-                                <h1 style={{ textAlign: "center", color: "rgb(255,255,255)", marginTop: String((window.innerHeight / 2)) + "px" }}>Waiting for other player...</h1>
-
+                                <div>
+                                    <h1 style={{ textAlign: "center", color: "rgb(255,255,255)", marginTop: String((window.innerHeight / 3)) + "px" }}>Waiting for other player...</h1>
+                                    <h2 style={{ textAlign: "center", color: "rgb(255,255,255)", marginTop: "10px" }}>Send the url to a friend to play.</h2>
+                                </div>
                             :
                             <div>
-                                <h1 style={{ textAlign: "center", color: "rgb(255,255,255)", marginTop: String((window.innerHeight / 3)) + "px" }}>Your Username:</h1>
+                                <h1 style={{ textAlign: "center", color: "rgb(255,255,255)", marginTop: String((window.innerHeight / 6)) + "px" }}>Shogi Game</h1>
+                                <h2 style={{ textAlign: "center", color: "rgb(255,255,255)"}}>by Ryan Cen</h2>
+                                <h2 style={{ textAlign: "center", color: "rgb(255,255,255)", marginTop: String((window.innerHeight / 6)) + "px" }}>Your Username:</h2>
 
-                                <input style={{ marginLeft: String((window.innerWidth / 2) - 120) + "px", width: "240px", marginTop: "62px" }}
+                                <input style={{ marginLeft: String((window.innerWidth / 2) - 120) + "px", width: "240px", marginTop: "10px" }}
                                     ref={this.textBox}
                                     onInput={this.typingUserName}></input>
 
                                 <button className="btn btn-primary"
-                                    style={{ marginLeft: String((window.innerWidth / 2) - 60) + "px", width: "120px", marginTop: "62px" }}
+                                    style={{ marginLeft: String((window.innerWidth / 2) - 60) + "px", width: "120px", marginTop: "30px" }}
                                     disabled={!(this.state.textInput.length > 0)}
                                     onClick={() => {
                                         this.join()
