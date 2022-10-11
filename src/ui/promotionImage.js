@@ -2,6 +2,9 @@ import React from 'react';
 import { Image } from 'react-konva';
 import useImage from 'use-image';
 
+/**
+ * Promotion image component that handles interaction with the promotion menu.
+ */
 const PromotionImage = (props) => {
 
     const [image] = useImage(props.imgurls[0]);
