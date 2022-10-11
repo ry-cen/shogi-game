@@ -8,7 +8,9 @@ class Square {
         this.piece = piece;
     }
 
-    // Sets the piece that is currently on this square.
+    /**
+     * Sets the piece that is currently on this square.
+     */
     setPiece(newPiece) {
         if (newPiece === null & this.piece === null) {
             return false;
@@ -30,17 +32,23 @@ class Square {
         }
     }
 
-    // Removes the piece that is currently on this square.
+    /**
+     * Removes the piece that is currently on this square.
+     */
     removePiece() {
         this.piece = null;
     }
 
-    // Returns the piece that is currently on this square.
+    /**
+     * Returns the piece that is currently on this square.
+     */
     getPiece() {
         return this.piece;
     }
 
-    // Returns the id of the piece that is currently on this square.
+    /**
+     * Returns the id of the piece that is currently on this square.
+     */
     getPieceId() {
         if (this.piece === null) {
             return "empty"
@@ -49,21 +57,30 @@ class Square {
         return this.piece.id
     }
 
+    /**
+     * Sets the canvas coords of this square.
+     */
     setCanvasCoord(newCoords) {
         this.canvasCoord = newCoords;
     }
 
-    // Returns the canvas coordinates of this square.
+    /**
+     * Returns the canvas coordinates of this square.
+     */
     getCanvasCoord() {
         return this.canvasCoord;
     }
 
-    // Returns the game coordinate (rank and file) of this square.
+    /**
+     * Returns the game coordinate (rank and file) of this square.
+     */
     getCoord() {
         return [this.x, this.y];
     }
 
-    // Returns whether or not this square is occupied by a piece.
+    /**
+     * Returns whether or not this square is occupied by a piece.
+     */
     isOccupied() {
         return this.piece != null;
     }

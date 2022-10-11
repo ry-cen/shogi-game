@@ -37,6 +37,9 @@ class Game extends React.Component {
 
     }
 
+    /**
+     * Opens all the sockets for disconnect, opponent's username and opponent's moves and requests the opponents username through the socket.
+     */
     componentDidMount() {
         window.addEventListener('resize', this.updateDimensions);
 
@@ -72,16 +75,25 @@ class Game extends React.Component {
             this.movePiece(move.selectedId, move.position, this.state.gameState, false, move.promote)
         })
     }
-    
+    /**
+     * Removes the resize event listener.
+     */
     componentWillUnmount() {
         window.removeEventListener('resize', this.updateDimensions);
     }
 
+    /**
+     * Updates the dimensions in the state.
+     */
     updateDimensions = () => {
         this.setState({ width: window.innerWidth, height: window.innerHeight });
     };
 
 
+    /**
+     * Handles the beginning of the dragging interaction on a piece by
+     * moving it to the top and setting it as the dragged piece.
+     */
     startDragging = (e) => {
         e.target.moveToTop();
         this.setState({
@@ -90,6 +102,9 @@ class Game extends React.Component {
         })
     }
 
+    /**
+     * Handles the placement of the piece when the player stops dragging.
+     */
     endDragging = (e) => {
         const currentGame = this.state.gameState;
         const currentBoard = currentGame.getBoard();
@@ -99,6 +114,11 @@ class Game extends React.Component {
         this.movePiece(selectedId, position, currentGame, this.props.thisPlayerIsBlack === this.state.playersTurnIsBlack);
     }
 
+
+    /**
+     * Moves the piece with the selected id to the given position and updates the game state 
+     * depending on any status messages from the game state's move piece function.
+     */
     movePiece = (selectedId, position, currentGame, isMyMove, promote = false) => {
 
         const update = currentGame.movePiece(selectedId, position, isMyMove, promote)
@@ -150,8 +170,6 @@ class Game extends React.Component {
 
         }
 
-        
-
 
         this.setState({
             playersTurnIsBlack: !this.state.playersTurnIsBlack
@@ -159,6 +177,9 @@ class Game extends React.Component {
 
     }
 
+    /**
+     * Displays the wins screen based on whose move it was when the winning move was made.
+     */
     checkmate = (isMyMove) => {
         this.setState({
             pieceUpForPromotion: "",
@@ -170,7 +191,9 @@ class Game extends React.Component {
     }
 
 
-
+    /**
+     * Finds the nearest square on the board to the given coordinates x and y.
+     */
     triangulate = (x, y, board) => {
         let hashmap = {}
         let shortestDistance = Infinity
@@ -194,6 +217,9 @@ class Game extends React.Component {
         return hashmap[shortestDistance]
     }
 
+    /**
+     * Handles not promoting when you choose not to promote a piece.
+     */
     handleNoPromotion = () => {
 
         socket.emit('move', {
@@ -214,6 +240,9 @@ class Game extends React.Component {
         
     }
 
+    /**
+     * Handles the promotion when you choose to promote a piece.
+     */ 
     handlePromotion = () => {
         const promoteStatus = this.state.gameState.promotePiece(this.state.pieceUpForPromotionLoc)
 
@@ -244,6 +273,9 @@ class Game extends React.Component {
 
     }
 
+    /**
+     * Handles the mouse hover on promotion selection screen.
+     */
     handleMouseEnter = (e) => {
         this.setState({
             hoverTarget: e.target.attrs.id

@@ -38,9 +38,6 @@ class CreateGame extends React.Component {
 
     }
 
-    /**
-     * Redirects the url to the game id.
-     */
     render() {
 
         return (

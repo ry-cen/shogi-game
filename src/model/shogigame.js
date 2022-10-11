@@ -18,6 +18,7 @@ const conv_y = {
 }
 
 class ShogiGame {
+
     constructor(thisPlayerIsBlack) {
         this.thisPlayerIsBlack = thisPlayerIsBlack
 
@@ -25,8 +26,12 @@ class ShogiGame {
         this.game = new Shogi();
         this.game.initialize();
 
+        // Id of each of the kings.
         this.kings = {};
+
+        // Making the board of pieces from the current game instance
         this.board = this.makeBoard();
+
         this.color = thisPlayerIsBlack ? Color.Black : Color.White;
         this.enemyColor = thisPlayerIsBlack ? Color.White : Color.Black;
 
@@ -36,9 +41,12 @@ class ShogiGame {
         
     }
 
-    // Checks if the current board state would be a checkmate
+    /**
+     * Checks if the current board state would be a checkmate
+     */
     isCheckmate(isMyMove) {
 
+        // Generates all pseudo legal moves of every possible piece
         let allPseudoLegalMoves = [];
 
         for (let i = 0; i < 9; i++) {
@@ -52,8 +60,8 @@ class ShogiGame {
             }
         }
 
-        let allPseudoLegalDrops = this.game.getDropsBy((isMyMove ? this.color : this.enemyColor));
-
+        
+        // Check if any moves would remove check.
         for (let i = 0; i < allPseudoLegalMoves.length; i++) {
             if (this.checkForCheck([allPseudoLegalMoves[i].from.x, allPseudoLegalMoves[i].from.y], [allPseudoLegalMoves[i].to.x, allPseudoLegalMoves[i].to.y], isMyMove)) {
                 continue
@@ -62,6 +70,13 @@ class ShogiGame {
             }
         }
 
+
+        // Generates all drops of a certain piece
+        // TODO optimize because kind doesn't matter if it is not FU, KE, or KY
+        let allPseudoLegalDrops = this.game.getDropsBy((isMyMove ? this.color : this.enemyColor));
+
+        
+        // Check if any drops would remove check
         for (let i = 0; i < allPseudoLegalDrops.length; i++) {
             if (this.checkForCheckDrop([allPseudoLegalDrops[i].to.x, allPseudoLegalDrops[i].to.y], isMyMove, allPseudoLegalDrops[i].kind)) {
                 continue
@@ -74,7 +89,9 @@ class ShogiGame {
 
     }
 
-    // Figures out if the current player is in check.
+    /**
+     * Figures out if the current player is in check.
+     */
     isInCheck(board, isMyMove) {
 
         // Finds if there are any pieces that are attacking the king.
@@ -96,11 +113,14 @@ class ShogiGame {
         return false
     }
 
-    // Creates the board with the correct pieces and squares and returns it.
+    /**
+     * Creates the board with the correct pieces and squares and returns it.
+     */
     makeBoard() {
 
         let board = []
 
+        // Creates an array of new squares with the canvas coordinates based on the side that the player is.
         for (let i = 0; i < 9; i++) {
             let row = []
             for (let j = 0; j < 9; j++) {
@@ -112,13 +132,14 @@ class ShogiGame {
             board.push(row)
         }
         
+        // Populates the board with pieces based on the game instance.
         for (let j = 0; j < 9; j++) {
             for (let i = 0; i < 9; i++) {
-                if (this.game.board[8-i][j] !== null) {
-                    board[j][i].setPiece(new ShogiPiece(String(this.game.board[i][j].kind), this.game.board[i][j].color, String(conv_x[i]) + String(conv_y[j+1])))
+                if (this.game.board[i][j] !== null) {
+                    board[j][i].setPiece(new ShogiPiece(String(this.game.board[i][j].kind), this.game.board[i][j].color, String(conv_x[i]) + String(conv_y[j])))
 
-                    if(this.game.board[8-i][j].kind === "OU") {
-                        this.kings[this.game.board[i][j].color] = String(conv_x[i]) + String(conv_y[j+1])
+                    if(this.game.board[i][j].kind === "OU") {
+                        this.kings[this.game.board[i][j].color] = String(conv_x[i]) + String(conv_y[j])
                     }
                 }
             }
@@ -126,24 +147,37 @@ class ShogiGame {
         return board
     }
 
-    // Returns the board contained in this game object.
+    /**
+     * Returns the board contained in this game object.
+     */
     getBoard() {
         return this.board;
     }
 
-    // Sets the board contained in this game object to the given board.
+    /**
+     * Sets the board contained in this game object to the given board.
+     */
     setBoard(board) {
         this.board = board;
     }
 
+    /**
+     * Returns the hand of this player
+     */
     getHand() {
         return this.hand;
     }
 
+    /**
+     * Returns the hand of the opponent.
+     */
     getEnemyHand() {
         return this.enemyHand;
     }
 
+    /**
+     * Checks if a move would make a board state that is in check for the given player based on isMyMove.
+     */
     checkForCheck(from, to, isMyMove) {
         const reverse_conv_x = {
             1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8
@@ -181,6 +215,9 @@ class ShogiGame {
         return false
     }
 
+    /**
+     * Checks if a drop would make a board state that is in check for the given player based on isMyMove.
+     */
     checkForCheckDrop(to, isMyMove, kind) {
         const reverse_conv_x = {
             9: 0, 8: 1, 7: 2, 6: 3, 5: 4, 4: 5, 3: 6, 2: 7, 1: 8
@@ -209,9 +246,9 @@ class ShogiGame {
         return false
     }
 
-    //move piece to a given coordinate
-    // pieceId
-    // to : [x, y]
+    /**
+     * move piece to a given coordinate and promotes it based on the promote flag.
+     */
     movePiece(pieceId, to, isMyMove, promote) {
 
         if (to === false) {
@@ -257,6 +294,7 @@ class ShogiGame {
         tmpBoard[y][x].removePiece();
         tmpBoard[to_y][to_x].setPiece(ogPiece);
 
+        // Checks if the move would result with you in check.
         if (this.isInCheck(tmpBoard, isMyMove)) {
             this.game.unmove(conv_x[x], conv_y[y], conv_x[to_x], conv_y[to_y], promote, capPiece);
             return "didn't move"
@@ -289,18 +327,22 @@ class ShogiGame {
 
         this.setBoard(currentBoard)
 
+        // Checks if it is checkmate if the opponent is in check
         if (this.isInCheck(this.board, !isMyMove)) {
             if(this.isCheckmate(!isMyMove)) {
                 return "checkmate"
             }
         }
 
+        // Sends the message to handle promotion if the piece reaches the promotion zone.
         if (this.isPromoteRank(ogPiece.color, to_y, y) && ogPiece.isPromotable() && isMyMove && !promote) {
             return "handle promotion"
         }
     }
 
-    // Promotes a piece on the board and game engine at a location.
+    /**
+     * Promotes a piece on the board and game engine at a location.
+     */
     promotePiece(pieceLoc) {
         this.board[pieceLoc[1]][pieceLoc[0]].getPiece().promote()
         this.game.board[pieceLoc[0]][pieceLoc[1]].promote()
@@ -312,10 +354,14 @@ class ShogiGame {
         }
     }
     
+    /**
+     * Drops the piece with the given piece id at the given to location.
+     */
     dropPiece(pieceId, to, isMyMove, currentBoard) {
         const to_y = to[1]
         const to_x = to[0]
 
+        // Find the index of the piece in the hand
         let currentHand = isMyMove ? this.hand : this.enemyHand;
         const pieceLoc = this.findPieceInHand(currentHand, pieceId);
 
@@ -327,6 +373,7 @@ class ShogiGame {
             
             const pieceType = droppingPiece.kind
 
+            // Checks if the drop is pseudo legal.
             try {
                 this.game.drop(conv_x[to_x], conv_y[to_y], pieceType)
             } catch (error) {
@@ -339,13 +386,16 @@ class ShogiGame {
 
             tmpBoard[to_y][to_x].setPiece(droppingPiece);
             
+            // Checks if the move won't keep you in check.
             if (this.isInCheck(tmpBoard, isMyMove)) {
                 this.game.undrop(conv_x[to_x], conv_y[to_y]);
                 return "didn't move"
             }
 
+            // Sets the piece at the location
             currentBoard[to_y][to_x].setPiece(droppingPiece);
 
+            // Removes the piece from the hand and sets the hand
             currentHand.splice(pieceLoc, 1);
             if (!isMyMove) {
                 this.enemyHand = currentHand;
@@ -357,6 +407,7 @@ class ShogiGame {
 
             this.setBoard(currentBoard);
 
+            // Checks for checkmate if opponent is in check
             if (this.isInCheck(this.board, !isMyMove)) {
                 if(this.isCheckmate(!isMyMove)) {
                     return "checkmate"
@@ -367,6 +418,9 @@ class ShogiGame {
         }
     }
 
+    /**
+     * Rearranges the hands such that the canvas coordinates are updated and there are no gaps.
+     */
     rearrangeHands() {
         for (let i = 0; i < this.enemyHand.length; i++) {
             const r = (Math.floor(i / 6)) + 1;
@@ -381,7 +435,9 @@ class ShogiGame {
         }
     }
 
-    // Finds a piece of the given piece id on the given board and returns the coordinates.
+    /**
+     * Finds a piece with the given piece id on the given board and returns the coordinates.
+     */
     findPieceOnBoard(board, pieceId) {
         for (var i = 0; i < 9; i++) {
             for (var j = 0; j < 9; j++) {
@@ -394,6 +450,9 @@ class ShogiGame {
         return false;
     }
 
+    /**
+     * Finds a piece with the given piece id on the given board and returns the kind of piece.
+     */
     findPieceKindOnBoard(pieceId) {
         for (var i = 0; i < 9; i++) {
             for (var j = 0; j < 9; j++) {
@@ -406,6 +465,9 @@ class ShogiGame {
         return false;
     }
 
+    /**
+     * Finds a piece with the given piece id in the hand and returns the index.
+     */
     findPieceInHand(hand, pieceId) {
         for (var i = 0; i < hand.length; i++) {
             if (hand[i].getPieceId() === pieceId) {
@@ -416,7 +478,9 @@ class ShogiGame {
         return false;
     }
 
-    // Returns if piece should be promoted because of dead end.
+    /**
+     * Returns if piece should be promoted because of dead end.
+     */
     isDeadEnd(kind, color, y) {
         let deadEndY = color === Color.Black ? {"KE": 1, "FU": 0, "KY": 0} : {"KE": 7, "FU": 8, "KY": 8};
 
@@ -424,13 +488,16 @@ class ShogiGame {
 
     }
 
+    /**
+     * Returns if a piece move would move into the promotion zone.
+     */
     isPromoteRank(color, to_y, y) {
         return ((color === Color.Black) ? (to_y <= 2) : (to_y >= 6)) || ((color === Color.Black) ? (y <= 2) : (y >= 6));
     }
 
-    
-
-    // Clones a given board and returns a copy of piece locations.
+    /**
+     * Clones a given board and returns a copy of piece locations.
+     */
     cloneBoard(board) {
         let newBoard = []
         for (let i = 0; i < 9; i++) {

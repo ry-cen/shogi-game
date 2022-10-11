@@ -2,6 +2,9 @@ import React from 'react';
 import { Image } from 'react-konva';
 import useImage from 'use-image';
 
+/**
+ * Piece component that displays the pieces on the board and handles interactions.
+ */
 const Piece = (props) => {
 
     const color = props.isBlack ? 0 : 1;
