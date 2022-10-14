@@ -1,3 +1,4 @@
+import React from "react"
 import JoinGame from "./joingame"
 import { useParams } from "react-router-dom"
 

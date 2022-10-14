@@ -23,6 +23,7 @@ const PromotionImage = (props) => {
             height = {(props.id === props.hoverTarget) ? 264 : 240}
             image = {image}
             onClick = {props.onClick}
+            onTap = {props.onClick}
             onMouseEnter = {props.onMouseEnter}
             onMouseLeave = {props.onMouseLeave}
         />

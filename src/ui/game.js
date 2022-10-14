@@ -319,7 +319,7 @@ class Game extends React.Component {
                                                     playersTurnIsBlack = {this.state.playersTurnIsBlack}
                                                 />)
                                         }
-                                        return
+                                        return null
                                     })}
                                 </React.Fragment>)
                         })}
@@ -342,7 +342,7 @@ class Game extends React.Component {
                                                     playersTurnIsBlack = {this.state.playersTurnIsBlack}
                                                 />)
                                         }
-                                        return
+                                        return null
                         })}
                         {this.state.gameState.getEnemyHand().map((square) => {
                                         if (square.isOccupied()) {                                    
@@ -363,7 +363,7 @@ class Game extends React.Component {
                                                     playersTurnIsBlack = {this.state.playersTurnIsBlack}
                                                 />)
                                         }
-                                        return
+                                        return null
                         })}
                         {(this.state.promotionScreenShow) ?
                             <Group>

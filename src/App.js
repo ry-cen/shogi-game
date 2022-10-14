@@ -1,8 +1,7 @@
 import './App.css';
 import useSound from 'use-sound';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import move from './assets/move.mp3'
-import Game from './ui/game';
 import CreateGame from './ui/creategame';
 import JoinGameWrapper from './ui/joingamewrapper';
 import React from 'react';
@@ -22,7 +21,6 @@ function App() {
         setDidRedirect(false)
     }, [])
 
-    const [username, setUsername] = React.useState('')
 
     return (
         <Router>

@@ -1,5 +1,3 @@
-import { Color } from "shogi.js";
-
 class Square {
     constructor(x, y, canvasCoord, piece) {
         this.x = x;

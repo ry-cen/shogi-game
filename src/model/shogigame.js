@@ -313,7 +313,7 @@ class ShogiGame {
             currentBoard[to_y][to_x].getPiece().promote();;
         }
 
-        if (pieceToHand != false) {
+        if (pieceToHand !== false) {
             if (!isMyMove) {
                 const r = (Math.floor(this.enemyHand.length / 6)) + 1;
                 const c = (this.enemyHand.length % 6) + 1;
