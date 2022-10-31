@@ -1,4 +1,8 @@
 # Shogi Game (1.0)
+
+![Login Screen](https://imgur.com/F91Skv2)
+![Game](https://imgur.com/npnLtSq)
+
 The frontend for my shogi game.
 
 [https://shogigame.herokuapp.com](https://shogigame.herokuapp.com)
