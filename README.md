@@ -1,7 +1,7 @@
 # Shogi Game (1.0)
 
-![Login Screen](https://imgur.com/F91Skv2)
-![Game](https://imgur.com/npnLtSq)
+![Login Screen](https://i.imgur.com/F91Skv2.png)
+![Game](https://i.imgur.com/npnLtSq.png)
 
 The frontend for my shogi game.
 
